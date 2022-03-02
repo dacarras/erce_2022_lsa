@@ -101,7 +101,6 @@ install.packages('WeMix')
 install.packages('texreg')
 install.packages('miceadds')
 
-
 ```
 
 
