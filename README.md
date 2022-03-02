@@ -2,8 +2,11 @@
 # LLECE: Taller Análisis II
 
 -   Taller de Análisis de datos de ERCE 2019
+
     -   Taller conducido de forma remota los días Marzo 02 y 03 de 2022
+
 -   Contenidos del taller
+
     -   [01
         introduccion](https://www.dropbox.com/s/m8pd9ub8o4ek8sk/01_introduccion.pdf?dl=1)
         -   introducción a estudios de gran escala
@@ -18,7 +21,7 @@
         -   como ajustar regresiones con diseño muestral
     -   [05
         resultados](https://www.dropbox.com/s/rz52cklx9f8lsyu/05_resultados.pdf?dl=1)
-        -   desarollo de resultados
+        -   desarollo y reproducción de resultados
     -   [06
         multinivel](https://www.dropbox.com/s/gtgqutfv97n8w0e/06_multinivel.pdf?dl=1)
         -   como ajustar modelos multinivel con diseño muestral
