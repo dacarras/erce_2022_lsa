@@ -4,17 +4,26 @@ output: github_document
 
 # LLECE: Taller Análisis II
 
-- 01 introduccion
-- 02 desarollo
-- 03 descriptivos
-- 04 regresiones
-- 05 resultados
-- 06 multinivel
+- Taller de Análisis de datos de ERCE 2019
+  + Taller conducido de forma remota los días Marzo 02 y 03 de 2022
+  
+- Contenidos del taller
+  - [01 introduccion](https://www.dropbox.com/s/8cstd0drcj4lnhz/01_introduccion.pdf?dl=1)
+      + introducción a estudios de gran escala
+  - [02 desarollo](https://www.dropbox.com/s/h0mwvuqyauflgb7/02_desarollo.pdf?dl=1)
+      + análisis de datos como desarollo
+  - [03 descriptivos](https://www.dropbox.com/s/2g4pwxl178605xl/03_descriptivos.pdf?dl=1)
+      + como estimar porcentajes, percentiles, y medias
+  - [04 regresiones](https://www.dropbox.com/s/2bkue9vox99jfws/04_regresiones.pdf?dl=1)
+      + como ajustar regresiones con diseño muestral
+  - [05 resultados](https://www.dropbox.com/s/rz52cklx9f8lsyu/05_resultados.pdf?dl=1)
+      + desarollo de resultados
+  - [06 multinivel](https://www.dropbox.com/s/gtgqutfv97n8w0e/06_multinivel.pdf?dl=1)
+      + como ajustar modelos multinivel con diseño muestral
 
 # erce
 
 - librería generada para el taller de análisis de datos de ERCE 2019, Taller II
-- este taller fue conducido de forma remota entre los días Marzo 02 y 03 de 2022
 - esta librería facilita el proceso de acceder a los datos del estudio ERCE 2019
 - además contiene funciones auxiliares para facilitar el proceso de análisis de datos
 
@@ -80,11 +89,11 @@ install.packages('miceadds')
 
 # Láminas
 
-[Bajar láminas](https://www.dropbox.com/sh/cvhydi7akjhrct9/AADTyDIAd9DXjQe9HQvpb6kPa?dl=1)
+[Bajar todas las láminas](https://www.dropbox.com/sh/cvhydi7akjhrct9/AADTyDIAd9DXjQe9HQvpb6kPa?dl=1)
 
 # Ejemplos
 
-[Bajar ejemplos](https://www.dropbox.com/sh/6nfjtrorh2hm0ot/AACdjXLYqih518Hrohhc8dUHa?dl=1)
+[Bajar todos los códigos de ejemplos](https://www.dropbox.com/sh/6nfjtrorh2hm0ot/AACdjXLYqih518Hrohhc8dUHa?dl=1)
 
 
 
