@@ -1,0 +1,2134 @@
+---
+title: 'LLECE: Taller de Análisis II'
+subtitle: "Multinivel"
+author: "dacarras"
+date: 'Marzo 3 de 2022'
+output:
+  html_document:
+    theme: paper
+    highlight: kate
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    fig_width: 10 
+    fig_height: 8 
+---
+
+<style>
+  .main-container {
+    max-width: 1600px !important;
+  }
+  .list-group-item.active, 
+  .list-group-item.active:focus, 
+  .list-group-item.active:hover {
+    background-color: #373334;
+  }
+</style>
+
+
+```{r setup, include=FALSE}
+#----------------------------------------------------------
+# setup
+#----------------------------------------------------------
+
+
+# knitr option
+knitr::opts_chunk$set(dev = 'png')
+options(knitr.kable.NA = '', digits = 2)
+options(scipen = 999999)
+
+# remove all previous objects
+rm(list = ls())
+
+# fonts
+Sys.setenv(LANG="en_US.UTF-8")
+
+
+# ------------------------------------------------------
+# get times
+# ------------------------------------------------------
+
+start_time <- Sys.time()
+
+# ------------------------------------------------------
+# cargar librerias principales
+# ------------------------------------------------------
+
+library(dplyr)
+
+```
+
+# Librerias a instalar
+
+```{r echo = TRUE, eval = FALSE}
+
+# -------------------------------------------------------------------
+# librerias
+# -------------------------------------------------------------------
+
+# Nota: instalar librerias manualmente.
+
+#------------------------------------------------
+# librerias para instalar librerias remotas
+#------------------------------------------------
+
+install.packages('devtools')
+install.packages('remotes')
+
+#------------------------------------------------
+# libreria ERCE con datos
+#------------------------------------------------
+
+# algunos computadores requieren esta opcion, cuando tienen instalado git
+credentials::set_github_pat()
+
+# la presente libreria se encuentra en desarollado y no es de acceso libre
+devtools::install_github(
+  'dacarras/erce',
+  auth_token = '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',
+  force = TRUE)
+
+#------------------------------------------------
+# librerías en uso
+#------------------------------------------------
+
+install.packages('tidyverse')
+install.packages('mitools')
+install.packages('survey')
+install.packages('srvyr')
+
+#------------------------------------------------
+# para ajustar modelos
+#------------------------------------------------
+
+install.packages('MplusAutomation')
+install.packages('RStata')
+install.packages('WeMix')
+
+#------------------------------------------------
+# mostrar estimados
+#------------------------------------------------
+
+install.packages('texreg')
+
+
+```
+
+
+
+# Código 1.1: preparar bases con diseño
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# preparar datos para análisis multinivel
+# -------------------------------------------------------------------
+
+
+#------------------------------------------------
+# cargar libreria principal `library(dplyr)`
+#------------------------------------------------
+
+library(dplyr)
+
+#------------------------------------------------
+# agregar variables generales de clustering
+#------------------------------------------------
+
+data_a6 <- erce::erce_2019_qa6 %>%
+erce::remove_labels() %>%
+mutate(id_k = as.numeric(as.factor(paste0(IDCNTRY)))) %>%
+mutate(id_s = as.numeric(as.factor(paste0(IDCNTRY, "_", STRATA)))) %>%
+mutate(id_j = as.numeric(as.factor(paste0(IDCNTRY, "_", IDSCHOOL)))) %>%
+mutate(id_i = seq(1:nrow(.)))
+
+#------------------------------------------------
+# agregar nombres de paises
+#------------------------------------------------
+
+country_names <- read.table(
+text="
+IDCNTRY ctry_name
+  32    'Argentina'              
+  76    'Brasil'
+ 170    'Colombia'
+ 188    'Costa Rica'
+ 192    'Cuba'
+ 214    'República Dominicana'
+ 218    'Ecuador'   
+ 222    'El Salvador'
+ 320    'Guatemala'
+ 340    'Honduras'
+ 484    'México'
+ 558    'Nicaragua'
+ 591    'Panamá'
+ 600    'Paraguay'
+ 604    'Perú'
+ 858    'Uruguay'
+",
+header=TRUE, stringsAsFactors = FALSE) %>%
+mutate(IDCNTRY = as.numeric(IDCNTRY))
+
+data_a6 <- data_a6 %>%
+           dplyr::left_join(., country_names, by = 'IDCNTRY')
+
+#------------------------------------------------
+# agregar peso senate
+#------------------------------------------------
+
+data_a6 <- data_a6 %>%
+           # borramos la variable original
+           dplyr::select(-WS) %>%
+           # agregamos la variable senate
+           erce::senate_weights(.,
+           scale = 1000,
+           wt = 'WT',
+           id_k = 'id_k')
+     
+# Nota: borramos la variable WS primero, y luego la creamos nuevamente.
+#       Realizamos este paso redundante solo para ilustrar como se puede crear este peso.
+
+
+#------------------------------------------------
+# agregar pesos para modelos multinivel
+#------------------------------------------------
+
+data_a6 <- data_a6 %>%
+           erce::lsa_weights(.,
+           id_i = 'id_i',
+           id_j = 'id_j',
+           id_k = 'id_k',
+           wt = 'WT',
+           wi = 'WI',
+           wj = 'WJ' )
+
+#------------------------------------------------
+# mostrar suma de pesos
+#------------------------------------------------
+
+data_a6 %>%
+group_by(id_k, ctry_name) %>%
+summarize(
+  sum_of_raw_weights = sum(WT),
+  sum_of_senate_weights = sum(ws),
+  sum_of_normalized_weights = sum(wa1*wa2),
+  sum_of_effective_sample_weights = sum(wb1*wb2),
+  number_of_observations = n()
+  ) %>%
+knitr::kable()
+
+
+#------------------------------------------------
+# crear BRR basados con senate weights
+#------------------------------------------------
+
+data_a6 <- data_a6 %>%
+mutate(repws001 = BRR1/WT * ws) %>%
+mutate(repws002 = BRR2/WT * ws) %>%
+mutate(repws003 = BRR3/WT * ws) %>%
+mutate(repws004 = BRR4/WT * ws) %>%
+mutate(repws005 = BRR5/WT * ws) %>%
+mutate(repws006 = BRR6/WT * ws) %>%
+mutate(repws007 = BRR7/WT * ws) %>%
+mutate(repws008 = BRR8/WT * ws) %>%
+mutate(repws009 = BRR9/WT * ws) %>%
+mutate(repws010 = BRR10/WT * ws) %>%
+mutate(repws011 = BRR11/WT * ws) %>%
+mutate(repws012 = BRR12/WT * ws) %>%
+mutate(repws013 = BRR13/WT * ws) %>%
+mutate(repws014 = BRR14/WT * ws) %>%
+mutate(repws015 = BRR15/WT * ws) %>%
+mutate(repws016 = BRR16/WT * ws) %>%
+mutate(repws017 = BRR17/WT * ws) %>%
+mutate(repws018 = BRR18/WT * ws) %>%
+mutate(repws019 = BRR19/WT * ws) %>%
+mutate(repws020 = BRR20/WT * ws) %>%
+mutate(repws021 = BRR21/WT * ws) %>%
+mutate(repws022 = BRR22/WT * ws) %>%
+mutate(repws023 = BRR23/WT * ws) %>%
+mutate(repws024 = BRR24/WT * ws) %>%
+mutate(repws025 = BRR25/WT * ws) %>%
+mutate(repws026 = BRR26/WT * ws) %>%
+mutate(repws027 = BRR27/WT * ws) %>%
+mutate(repws028 = BRR28/WT * ws) %>%
+mutate(repws029 = BRR29/WT * ws) %>%
+mutate(repws030 = BRR30/WT * ws) %>%
+mutate(repws031 = BRR31/WT * ws) %>%
+mutate(repws032 = BRR32/WT * ws) %>%
+mutate(repws033 = BRR33/WT * ws) %>%
+mutate(repws034 = BRR34/WT * ws) %>%
+mutate(repws035 = BRR35/WT * ws) %>%
+mutate(repws036 = BRR36/WT * ws) %>%
+mutate(repws037 = BRR37/WT * ws) %>%
+mutate(repws038 = BRR38/WT * ws) %>%
+mutate(repws039 = BRR39/WT * ws) %>%
+mutate(repws040 = BRR40/WT * ws) %>%
+mutate(repws041 = BRR41/WT * ws) %>%
+mutate(repws042 = BRR42/WT * ws) %>%
+mutate(repws043 = BRR43/WT * ws) %>%
+mutate(repws044 = BRR44/WT * ws) %>%
+mutate(repws045 = BRR45/WT * ws) %>%
+mutate(repws046 = BRR46/WT * ws) %>%
+mutate(repws047 = BRR47/WT * ws) %>%
+mutate(repws048 = BRR48/WT * ws) %>%
+mutate(repws049 = BRR49/WT * ws) %>%
+mutate(repws050 = BRR50/WT * ws) %>%
+mutate(repws051 = BRR51/WT * ws) %>%
+mutate(repws052 = BRR52/WT * ws) %>%
+mutate(repws053 = BRR53/WT * ws) %>%
+mutate(repws054 = BRR54/WT * ws) %>%
+mutate(repws055 = BRR55/WT * ws) %>%
+mutate(repws056 = BRR56/WT * ws) %>%
+mutate(repws057 = BRR57/WT * ws) %>%
+mutate(repws058 = BRR58/WT * ws) %>%
+mutate(repws059 = BRR59/WT * ws) %>%
+mutate(repws060 = BRR60/WT * ws) %>%
+mutate(repws061 = BRR61/WT * ws) %>%
+mutate(repws062 = BRR62/WT * ws) %>%
+mutate(repws063 = BRR63/WT * ws) %>%
+mutate(repws064 = BRR64/WT * ws) %>%
+mutate(repws065 = BRR65/WT * ws) %>%
+mutate(repws066 = BRR66/WT * ws) %>%
+mutate(repws067 = BRR67/WT * ws) %>%
+mutate(repws068 = BRR68/WT * ws) %>%
+mutate(repws069 = BRR69/WT * ws) %>%
+mutate(repws070 = BRR70/WT * ws) %>%
+mutate(repws071 = BRR71/WT * ws) %>%
+mutate(repws072 = BRR72/WT * ws) %>%
+mutate(repws073 = BRR73/WT * ws) %>%
+mutate(repws074 = BRR74/WT * ws) %>%
+mutate(repws075 = BRR75/WT * ws) %>%
+mutate(repws076 = BRR76/WT * ws) %>%
+mutate(repws077 = BRR77/WT * ws) %>%
+mutate(repws078 = BRR78/WT * ws) %>%
+mutate(repws079 = BRR79/WT * ws) %>%
+mutate(repws080 = BRR80/WT * ws) %>%
+mutate(repws081 = BRR81/WT * ws) %>%
+mutate(repws082 = BRR82/WT * ws) %>%
+mutate(repws083 = BRR83/WT * ws) %>%
+mutate(repws084 = BRR84/WT * ws) %>%
+mutate(repws085 = BRR85/WT * ws) %>%
+mutate(repws086 = BRR86/WT * ws) %>%
+mutate(repws087 = BRR87/WT * ws) %>%
+mutate(repws088 = BRR88/WT * ws) %>%
+mutate(repws089 = BRR89/WT * ws) %>%
+mutate(repws090 = BRR90/WT * ws) %>%
+mutate(repws091 = BRR91/WT * ws) %>%
+mutate(repws092 = BRR92/WT * ws) %>%
+mutate(repws093 = BRR93/WT * ws) %>%
+mutate(repws094 = BRR94/WT * ws) %>%
+mutate(repws095 = BRR95/WT * ws) %>%
+mutate(repws096 = BRR96/WT * ws) %>%
+mutate(repws097 = BRR97/WT * ws) %>%
+mutate(repws098 = BRR98/WT * ws) %>%
+mutate(repws099 = BRR99/WT * ws) %>%
+mutate(repws100 = BRR100/WT * ws) 
+
+
+```
+
+# Código 1.2: Preparar covariables
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# agregar covariables de escuela
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear variable referida a densidad poblacional
+#------------------------------------------------
+
+urba_a6 <- erce::erce_2019_qd6 %>%
+           mutate(urba = case_when(
+            DDIT19 == 1 ~ 0, # 2.000 habitantes o menos.
+            DDIT19 == 2 ~ 0, # Entre 2.001 y 5.000 habitantes.
+            DDIT19 == 3 ~ 0, # Entre 5.001 y 10.000 habitantes.
+            DDIT19 == 4 ~ 1, # Entre 10.001 y 100.000 habitantes
+            DDIT19 == 5 ~ 1  # Más de 100.000 habitantes.
+            )) %>%
+           dplyr::select(
+            IDCNTRY, IDSCHOOL, urba)
+
+
+#------------------------------------------------
+# agregar variable
+#------------------------------------------------
+
+data_model <- data_a6 %>%
+              dplyr::left_join(., urba_a6,
+                by = c('IDCNTRY', 'IDSCHOOL'))
+
+#------------------------------------------------
+# centrado de nivel socioeconómico
+#------------------------------------------------
+
+data_model <- data_model %>%
+## socio economic status
+mutate(z = ISECF)  %>%                      # mean score
+mutate(z_c = r4sda::c_mean(z, id_j)) %>%    # means by group
+mutate(z_g = r4sda::c_mean(z, id_k)) %>%    # grand mean    
+mutate(z_w = z - z_c   )    %>%  # centering within cluster
+mutate(z_m = z - z_g   )    %>%  # centering to the grand mean
+mutate(z_b = z_c - z_g )         # centered cluster means
+
+
+#------------------------------------------------
+# centrado de factor escuela
+#------------------------------------------------
+
+data_model <- data_model %>%
+## student responses
+mutate(v = urba)  %>%                       # mean score
+mutate(v_c = r4sda::c_mean(v, id_j)) %>%    # means by group
+mutate(v_g = r4sda::c_mean(v, id_k)) %>%    # grand mean    
+mutate(v_w = v - v_c   )    %>%  # centering within cluster
+mutate(v_m = v - v_g   )    %>%  # centering to the grand mean
+mutate(v_b = v_c - v_g )         # centered cluster means
+
+
+
+```
+
+# Codigo 1.3 modelo multinivel con `lmerTest`
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con lme4 sin diseño
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# configurar consola
+#------------------------------------------------
+
+options(scipen = 999)
+options(digits = 10)
+
+#------------------------------------------------
+# ajustar modelo
+#------------------------------------------------
+           
+data_model %>%
+dplyr::filter(ctry_name == 'Paraguay') %>%
+lmerTest::lmer(MAT_1 ~ 1 + z_w + z_b + v_b + (1 | id_j), data = ., REML = FALSE) %>%
+broom.mixed::tidy() %>%
+knitr::kable(., digits = 2)
+
+```
+
+
+# Codigo 1.4 modelo multinivel con `Mplus` y valores plausibles
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con mplus
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear datos para mplus
+#------------------------------------------------
+
+data_mixed <- data_model %>%
+              dplyr::filter(ctry_name == 'Paraguay') %>%
+              rename_all(tolower) %>%
+              dplyr::select(
+              mat_1, mat_2, mat_3, mat_4, mat_5,
+              id_k, id_s, id_j, id_i,
+              wb1, wb2, wi, wj,
+              z_w, z_b, v_b
+              )
+
+#------------------------------------------------
+# crear lista de datos imputados
+#------------------------------------------------
+
+data_1 <- data_mixed %>% mutate(y = mat_1)
+data_2 <- data_mixed %>% mutate(y = mat_2)
+data_3 <- data_mixed %>% mutate(y = mat_3)
+data_4 <- data_mixed %>% mutate(y = mat_4)
+data_5 <- data_mixed %>% mutate(y = mat_5)
+
+data_list <- list(
+data_1,
+data_2,
+data_3,
+data_4,
+data_5
+)
+
+#------------------------------------------------
+# crear objeto mplus
+#------------------------------------------------
+
+mplus_model <- MplusAutomation::mplusObject(
+MODEL = '
+%WITHIN%
+
+y on z_w;
+
+%BETWEEN%
+
+y on v_b;
+y on z_b;
+
+',
+ANALYSIS = '
+TYPE = COMPLEX TWOLEVEL;
+ESTIMATOR = MLR;
+PROCESSORS = 4;
+',
+VARIABLE ='
+STRATIFICATION = id_s;
+CLUSTER  = id_j;
+WEIGHT   = wi;
+BWEIGHT  = wj;
+WTSCALE  = ECLUSTER;
+BWTSCALE = SAMPLE;
+
+USEVARIABLES =
+y
+z_w
+v_b
+z_b
+;
+
+WITHIN  = z_w;
+BETWEEN = v_b z_b;
+
+',
+OUTPUT ='
+STANDARDIZED
+CINTERVAL
+RESIDUAL
+;
+',
+rdata = data_list,
+imputed = TRUE
+)
+
+
+#------------------------------------------------
+# lista de datos
+#------------------------------------------------
+
+
+mlm_model_data_list <-
+'
+mlm_imp_1.dat
+mlm_imp_2.dat
+mlm_imp_3.dat
+mlm_imp_4.dat
+mlm_imp_5.dat
+'
+
+write(mlm_model_data_list, file="mlm.dat", ncolumns=1)
+
+#------------------------------------------------
+# fit models
+#------------------------------------------------
+
+fit_4 <- MplusAutomation::mplusModeler(mplus_model,
+             modelout = 'mlm.inp',
+             dataout = 'mlm.dat',
+             run = 1L,
+             hashfilename = FALSE,
+             writeData = 'always'
+             )
+
+#------------------------------------------------
+# extraer estimados
+#------------------------------------------------
+
+
+ci_00  <- fit_4 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('ci.unstandardized') %>%
+          tibble::tibble() %>%
+          mutate(term = param)  %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(ll   = low2.5) %>%
+          mutate(ul   = up2.5)  %>%
+          mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+          dplyr::select(index, ll, ul)
+
+r2_00  <- fit_4 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('r2') %>%
+          tibble::tibble() %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(term = c('r2_w', 'r2_b')) %>%
+          mutate(object = c('r2', 'r2')) %>%
+          mutate(e  = as.numeric(est)) %>%
+          mutate(se = as.numeric(se)) %>%
+          mutate(p  = as.numeric(pval)) %>%
+          mutate(missing  = as.numeric(rate_missing)) %>%
+          mutate(index = paste0(term,"_",level)) %>%
+          mutate(control = 'yes') %>%
+          dplyr::select(index, level, object, term, e, se, p, missing, control)
+
+tabla_1_4 <- fit_4 %>%
+             purrr::pluck('results') %>%
+             purrr::pluck('parameters') %>%
+             purrr::pluck('unstandardized') %>%
+             tibble::tibble() %>%
+             mutate(term = param) %>%
+             mutate(level  = tolower(BetweenWithin)) %>%
+             mutate(e  = est) %>%
+             mutate(se = se) %>%
+             mutate(p  = pval) %>%
+             mutate(missing  = rate_missing) %>%
+             mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+             dplyr::left_join(., ci_00, by = 'index') %>%
+             mutate(control = 'yes') %>%
+             mutate(object = c(           'pi_w', 'epsilon', 
+                               'gamma_b', 'pi_b', 'alpha', 'mu')) %>%
+             dplyr::bind_rows(., r2_00) %>%
+             dplyr::select(level, object, term, e, se, p, missing, ll, ul, control)
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_1_4 %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+# Codigo 1.5 modelo multinivel con `svylme`
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con svylme
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# configurar consola
+#------------------------------------------------
+
+options(scipen = 999)
+options(digits = 10)
+
+#------------------------------------------------
+# survey object
+#------------------------------------------------
+
+erce_svy2l <- data_model %>%
+              dplyr::filter(ctry_name == 'Paraguay') %>%
+              survey::svydesign(
+              id = ~ id_j + id_i,
+              strata  = ~id_s,
+              data = .,
+              weights = ~ wb1 + wb2
+              )
+
+#------------------------------------------------
+# fit model
+#------------------------------------------------
+
+svylme_pv_results <- mitools::withPV(
+   mapping = mat ~ MAT_1 + MAT_2 + MAT_3 + MAT_4 + MAT_5, #<<
+   data = erce_svy2l,
+   action = quote(
+    svylme::svy2lme(
+    mat ~ 1 + z_w + z_b + v_b + as.factor(id_s) + (1 | id_j),
+    sterr  = TRUE,
+    method = 'nested',
+    design = erce_svy2l
+    )
+    ),
+   rewrite=TRUE
+   )
+
+#------------------------------------------------
+# tabla
+#------------------------------------------------
+
+tabla_1_5 <- erce::combine_reg(svylme_pv_results)
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_1_5 %>%
+knitr::kable(., digits = 2)
+
+```
+
+# Codigo 1.6 modelo multinivel con `WeMix`
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con WeMix
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# configurar consola
+#------------------------------------------------
+
+options(scipen = 999)
+options(digits = 10)
+
+#------------------------------------------------
+# survey object
+#------------------------------------------------
+
+data_wemix <- data_model %>%
+              dplyr::filter(ctry_name == 'Paraguay')
+
+#------------------------------------------------
+# fit model
+#------------------------------------------------
+
+wemix_pv_results <- mitools::withPV(
+   mapping = mat ~ MAT_1 + MAT_2 + MAT_3 + MAT_4 + MAT_5, #<<
+   data = data_wemix,
+   action = quote(
+WeMix::mix(
+  mat ~ 1 + z_w + z_b + v_b + as.factor(id_s) + (1 | id_j),
+  data = data_wemix,
+  weights = c('wb1','wb2'),
+  cWeights = TRUE)
+    ),
+   rewrite=TRUE
+   )
+
+
+#------------------------------------------------
+# tabla
+#------------------------------------------------
+
+options(scipen = 999)
+options(digits = 4)
+
+tabla_1_6 <- summary(
+  miceadds::pool_mi(
+  qhat = list(
+    wemix_pv_results[[1]]$coef,
+    wemix_pv_results[[2]]$coef,
+    wemix_pv_results[[3]]$coef,
+    wemix_pv_results[[4]]$coef,
+    wemix_pv_results[[5]]$coef
+    ), 
+  se   = list(
+    wemix_pv_results[[1]]$SE,
+    wemix_pv_results[[2]]$SE,
+    wemix_pv_results[[3]]$SE,
+    wemix_pv_results[[4]]$SE,
+    wemix_pv_results[[5]]$SE
+    )
+  )
+) %>%
+tibble::rownames_to_column("term") %>%
+tibble::as_tibble()
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_1_6 %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+
+# Codigo 1.7 modelo multinivel con `STATA`
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con stata
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# guardar datos en stata
+#------------------------------------------------
+
+data_model %>%
+dplyr::filter(ctry_name == 'Paraguay') %>%
+haven::write_dta(., 'erce_paraguay_a6.dta', version = 12)
+
+#------------------------------------------------
+# configurar libreria RStata
+#------------------------------------------------
+
+library(RStata)
+options("RStata.StataPath"='/Applications/Stata/StataMP.app/Contents/MacOS/stata-mp')
+options("RStata.StataVersion"=15)
+
+#------------------------------------------------
+# codigo stata
+#------------------------------------------------
+
+stata_code <- '
+
+* ===============================================.
+* define folder and open data
+* ===============================================.
+
+cd "/Users/d/"
+use "erce_paraguay_a6.dta"
+
+* ===============================.
+* fit mlm model with @pv
+* ===============================.
+
+pv, pv(MAT_1 MAT_2 MAT_3 MAT_4 MAT_5): ///
+mixed @pv               ///
+z_w                     ///
+z_b                     ///
+v_b                     ///
+i.id_s                  ///
+[pw=wb1] || id_j:, ml pweight(wb2)
+estimates store m01
+
+* ===============================.
+* variance
+* ===============================.
+
+/*return residual variance */
+_diparm lnsig_e,  f(exp(@)^2) d(2*exp(@)^2)    
+/*return between  variance */
+_diparm lns1_1_1, f(exp(@)^2) d(2*exp(@)^2)  
+
+* ===============================.
+* estimates
+* ===============================.
+
+esttab m01, b(%9.2f) se(%9.2f) wide transform(ln*: exp(2*@) exp(2*@))
+
+'
+
+#----------------------------------------------------------
+# mostrar output
+#----------------------------------------------------------
+
+RStata::stata(stata_code)
+
+#----------------------------------------------------------
+# crear tabla
+#----------------------------------------------------------
+
+tabla_1_7 <- read.table(
+text = "
+variable            e          star       se
+z_w                 12.51      '***'    2.26
+z_b                 26.01      '** '    9.33
+v_b                 20.51      '** '    7.91
+66.id_s              0.00      '   '      NA
+67.id_s             30.41      '** '   10.47
+68.id_s             53.30      '***'   15.43
+69.id_s             39.92      '** '   12.97
+70.id_s             48.29      '***'    9.75
+71.id_s             33.91      '   '   40.82
+72.id_s            -15.95      '   '   17.51
+_cons              629.47      '***'    4.20
+",
+header=TRUE, stringsAsFactors = FALSE)
+
+
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_1_7 %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+
+# Anexo 1: comparación de estimaciones con Mplus
+
+Comparación de diferentes opciones de estimacion en Mplus
+
+- `fit_4` modelo multinivel con pesos desagregados, y escalados a la muestra efectiva, incluyendo a los estratos
+- `fit_8` modelo multinivel con pesos desagregados, y escalados a la muestra efectiva, incluyendo a los estratos como efecto fijo
+- `fit_9` modelo multinivel con pesos desagregados, incluyendo a los pesos escalados a la muestra efectiva de modo observado, incluyendo a los estratos como efecto fijo
+- `fit_10` modelo multinivel con pesos desagregados, incluyendo a los pesos normalizados de modo observado, incluyendo a los estratos como efecto fijo
+- `fit_11` modelo multinivel sin pesos, incluyendo a los estratos como efecto fijo
+
+## Codigo 1.8 modelo multinivel con `Mplus`, *strata* como dummy
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con mplus
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear datos para mplus
+#------------------------------------------------
+
+data_mixed <- data_model %>%
+              dplyr::filter(ctry_name == 'Paraguay') %>%
+              rename_all(tolower) %>%
+              mutate(strat_1 = dplyr::if_else(id_s == 66, 1, 0 )) %>%
+              mutate(strat_2 = dplyr::if_else(id_s == 67, 1, 0 )) %>%
+              mutate(strat_3 = dplyr::if_else(id_s == 68, 1, 0 )) %>%
+              mutate(strat_4 = dplyr::if_else(id_s == 69, 1, 0 )) %>%
+              mutate(strat_5 = dplyr::if_else(id_s == 70, 1, 0 )) %>%
+              mutate(strat_6 = dplyr::if_else(id_s == 71, 1, 0 )) %>%
+              mutate(strat_7 = dplyr::if_else(id_s == 72, 1, 0 )) %>%
+              dplyr::select(
+              mat_1, mat_2, mat_3, mat_4, mat_5,
+              id_k, id_s, id_j, id_i,
+              wb1, wb2, wi, wj,
+              z_w, z_b, v_b,
+#              strat_1,
+              strat_2,
+              strat_3,
+              strat_4,
+              strat_5,
+              strat_6,
+              strat_7
+              )
+
+#------------------------------------------------
+# crear lista de datos imputados
+#------------------------------------------------
+
+data_1 <- data_mixed %>% mutate(y = mat_1)
+data_2 <- data_mixed %>% mutate(y = mat_2)
+data_3 <- data_mixed %>% mutate(y = mat_3)
+data_4 <- data_mixed %>% mutate(y = mat_4)
+data_5 <- data_mixed %>% mutate(y = mat_5)
+
+data_list <- list(
+data_1,
+data_2,
+data_3,
+data_4,
+data_5
+)
+
+#------------------------------------------------
+# crear objeto mplus
+#------------------------------------------------
+
+mplus_model <- MplusAutomation::mplusObject(
+MODEL = '
+%WITHIN%
+
+y on z_w;
+
+%BETWEEN%
+
+y on v_b;
+y on z_b;
+y on strat_2; 
+y on strat_3; 
+y on strat_4; 
+y on strat_5; 
+y on strat_6; 
+y on strat_7; 
+
+',
+ANALYSIS = '
+TYPE = TWOLEVEL;
+ESTIMATOR = MLR;
+PROCESSORS = 4;
+',
+VARIABLE ='
+CLUSTER  = id_j;
+WEIGHT   = wi;
+BWEIGHT  = wj;
+WTSCALE  = ECLUSTER;
+BWTSCALE = SAMPLE;
+
+USEVARIABLES =
+y
+z_w
+v_b
+z_b
+strat_2
+strat_3
+strat_4
+strat_5
+strat_6
+strat_7
+;
+
+WITHIN  = z_w;
+BETWEEN = v_b z_b strat_2-strat_7;
+
+',
+OUTPUT ='
+STANDARDIZED
+CINTERVAL
+RESIDUAL
+;
+',
+rdata = data_list,
+imputed = TRUE
+)
+
+
+#------------------------------------------------
+# lista de datos
+#------------------------------------------------
+
+
+mlm_model_data_list <-
+'
+mlm_imp_1.dat
+mlm_imp_2.dat
+mlm_imp_3.dat
+mlm_imp_4.dat
+mlm_imp_5.dat
+'
+
+write(mlm_model_data_list, file="mlm.dat", ncolumns=1)
+
+#------------------------------------------------
+# fit models
+#------------------------------------------------
+
+fit_8 <- MplusAutomation::mplusModeler(mplus_model,
+             modelout = 'mlm.inp',
+             dataout = 'mlm.dat',
+             run = 1L,
+             hashfilename = FALSE,
+             writeData = 'always'
+             )
+
+#------------------------------------------------
+# extraer estimados
+#------------------------------------------------
+
+
+ci_00  <- fit_8 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('ci.unstandardized') %>%
+          tibble::tibble() %>%
+          mutate(term = param)  %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(ll   = low2.5) %>%
+          mutate(ul   = up2.5)  %>%
+          mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+          dplyr::select(index, ll, ul)
+
+r2_00  <- fit_8 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('r2') %>%
+          tibble::tibble() %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(term = c('r2_w', 'r2_b')) %>%
+          mutate(object = c('r2', 'r2')) %>%
+          mutate(e  = as.numeric(est)) %>%
+          mutate(se = as.numeric(se)) %>%
+          mutate(p  = as.numeric(pval)) %>%
+          mutate(missing  = as.numeric(rate_missing)) %>%
+          mutate(index = paste0(term,"_",level)) %>%
+          mutate(control = 'yes') %>%
+          dplyr::select(index, level, object, term, e, se, p, missing, control)
+
+tabla_1_8 <- fit_8 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('unstandardized') %>%
+          tibble::tibble() %>%
+          mutate(term = param) %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(e  = est) %>%
+          mutate(se = se) %>%
+          mutate(p  = pval) %>%
+          mutate(missing  = rate_missing) %>%
+          mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+          dplyr::left_join(., ci_00, by = 'index') %>%
+          mutate(control = 'yes') %>%
+          mutate(object = c(           'pi_w', 'epsilon', 
+                            'gamma_b', 'pi_b', 
+                            'delta_b1','delta_b2','delta_b3',
+                            'delta_b4','delta_b5','delta_b6',
+                            'alpha', 'mu')) %>%
+          dplyr::bind_rows(., r2_00) %>%
+          dplyr::select(level, object, term, e, se, p, missing, ll, ul, control)
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_1_8 %>%
+knitr::kable(., digits = 2)
+
+```
+
+
+## Codigo 1.9 modelo multinivel con `Mplus`, strata como dummy, incluyendo a wb1 y wb2 como pesos
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con mplus
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear datos para mplus
+#------------------------------------------------
+
+data_mixed <- data_model %>%
+              dplyr::filter(ctry_name == 'Paraguay') %>%
+              rename_all(tolower) %>%
+              mutate(strat_1 = dplyr::if_else(id_s == 66, 1, 0 )) %>%
+              mutate(strat_2 = dplyr::if_else(id_s == 67, 1, 0 )) %>%
+              mutate(strat_3 = dplyr::if_else(id_s == 68, 1, 0 )) %>%
+              mutate(strat_4 = dplyr::if_else(id_s == 69, 1, 0 )) %>%
+              mutate(strat_5 = dplyr::if_else(id_s == 70, 1, 0 )) %>%
+              mutate(strat_6 = dplyr::if_else(id_s == 71, 1, 0 )) %>%
+              mutate(strat_7 = dplyr::if_else(id_s == 72, 1, 0 )) %>%
+              dplyr::select(
+              mat_1, mat_2, mat_3, mat_4, mat_5,
+              id_k, id_s, id_j, id_i,
+              wb1, wb2, wi, wj,
+              z_w, z_b, v_b,
+#              strat_1,
+              strat_2,
+              strat_3,
+              strat_4,
+              strat_5,
+              strat_6,
+              strat_7
+              )
+
+#------------------------------------------------
+# crear lista de datos imputados
+#------------------------------------------------
+
+data_1 <- data_mixed %>% mutate(y = mat_1)
+data_2 <- data_mixed %>% mutate(y = mat_2)
+data_3 <- data_mixed %>% mutate(y = mat_3)
+data_4 <- data_mixed %>% mutate(y = mat_4)
+data_5 <- data_mixed %>% mutate(y = mat_5)
+
+data_list <- list(
+data_1,
+data_2,
+data_3,
+data_4,
+data_5
+)
+
+#------------------------------------------------
+# crear objeto mplus
+#------------------------------------------------
+
+mplus_model <- MplusAutomation::mplusObject(
+MODEL = '
+%WITHIN%
+
+y on z_w;
+
+%BETWEEN%
+
+y on v_b;
+y on z_b;
+y on strat_2; 
+y on strat_3; 
+y on strat_4; 
+y on strat_5; 
+y on strat_6; 
+y on strat_7; 
+
+',
+ANALYSIS = '
+TYPE = TWOLEVEL;
+ESTIMATOR = MLR;
+PROCESSORS = 4;
+',
+VARIABLE ='
+CLUSTER  = id_j;
+WEIGHT   = wb1;
+BWEIGHT  = wb2;
+WTSCALE  = UNSCALED;
+BWTSCALE = UNSCALED;
+
+USEVARIABLES =
+y
+z_w
+v_b
+z_b
+strat_2
+strat_3
+strat_4
+strat_5
+strat_6
+strat_7
+;
+
+WITHIN  = z_w;
+BETWEEN = v_b z_b strat_2-strat_7;
+
+',
+OUTPUT ='
+STANDARDIZED
+CINTERVAL
+RESIDUAL
+;
+',
+rdata = data_list,
+imputed = TRUE
+)
+
+
+#------------------------------------------------
+# lista de datos
+#------------------------------------------------
+
+
+mlm_model_data_list <-
+'
+mlm_imp_1.dat
+mlm_imp_2.dat
+mlm_imp_3.dat
+mlm_imp_4.dat
+mlm_imp_5.dat
+'
+
+write(mlm_model_data_list, file="mlm.dat", ncolumns=1)
+
+#------------------------------------------------
+# fit models
+#------------------------------------------------
+
+fit_9 <- MplusAutomation::mplusModeler(mplus_model,
+             modelout = 'mlm.inp',
+             dataout = 'mlm.dat',
+             run = 1L,
+             hashfilename = FALSE,
+             writeData = 'always'
+             )
+
+#------------------------------------------------
+# extraer estimados
+#------------------------------------------------
+
+
+ci_00  <- fit_9 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('ci.unstandardized') %>%
+          tibble::tibble() %>%
+          mutate(term = param)  %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(ll   = low2.5) %>%
+          mutate(ul   = up2.5)  %>%
+          mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+          dplyr::select(index, ll, ul)
+
+r2_00  <- fit_9 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('r2') %>%
+          tibble::tibble() %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(term = c('r2_w', 'r2_b')) %>%
+          mutate(object = c('r2', 'r2')) %>%
+          mutate(e  = as.numeric(est)) %>%
+          mutate(se = as.numeric(se)) %>%
+          mutate(p  = as.numeric(pval)) %>%
+          mutate(missing  = as.numeric(rate_missing)) %>%
+          mutate(index = paste0(term,"_",level)) %>%
+          mutate(control = 'yes') %>%
+          dplyr::select(index, level, object, term, e, se, p, missing, control)
+
+tabla_1_9 <- fit_9 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('unstandardized') %>%
+          tibble::tibble() %>%
+          mutate(term = param) %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(e  = est) %>%
+          mutate(se = se) %>%
+          mutate(p  = pval) %>%
+          mutate(missing  = rate_missing) %>%
+          mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+          dplyr::left_join(., ci_00, by = 'index') %>%
+          mutate(control = 'yes') %>%
+          mutate(object = c(           'pi_w', 'epsilon', 
+                            'gamma_b', 'pi_b', 
+                            'delta_b1','delta_b2','delta_b3',
+                            'delta_b4','delta_b5','delta_b6',
+                            'alpha', 'mu')) %>%
+          dplyr::bind_rows(., r2_00) %>%
+          dplyr::select(level, object, term, e, se, p, missing, ll, ul, control)
+
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_1_9 %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+
+## Codigo 1.10 modelo multinivel con `Mplus`, strata como dummy, incluyendo a wa1 y wa2 como pesos
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con mplus
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear datos para mplus
+#------------------------------------------------
+
+data_mixed <- data_model %>%
+              dplyr::filter(ctry_name == 'Paraguay') %>%
+              rename_all(tolower) %>%
+              mutate(strat_1 = dplyr::if_else(id_s == 66, 1, 0 )) %>%
+              mutate(strat_2 = dplyr::if_else(id_s == 67, 1, 0 )) %>%
+              mutate(strat_3 = dplyr::if_else(id_s == 68, 1, 0 )) %>%
+              mutate(strat_4 = dplyr::if_else(id_s == 69, 1, 0 )) %>%
+              mutate(strat_5 = dplyr::if_else(id_s == 70, 1, 0 )) %>%
+              mutate(strat_6 = dplyr::if_else(id_s == 71, 1, 0 )) %>%
+              mutate(strat_7 = dplyr::if_else(id_s == 72, 1, 0 )) %>%
+              dplyr::select(
+              mat_1, mat_2, mat_3, mat_4, mat_5,
+              id_k, id_s, id_j, id_i,
+              wa1, wa2, wi, wj,
+              z_w, z_b, v_b,
+#              strat_1,
+              strat_2,
+              strat_3,
+              strat_4,
+              strat_5,
+              strat_6,
+              strat_7
+              )
+
+#------------------------------------------------
+# crear lista de datos imputados
+#------------------------------------------------
+
+data_1 <- data_mixed %>% mutate(y = mat_1)
+data_2 <- data_mixed %>% mutate(y = mat_2)
+data_3 <- data_mixed %>% mutate(y = mat_3)
+data_4 <- data_mixed %>% mutate(y = mat_4)
+data_5 <- data_mixed %>% mutate(y = mat_5)
+
+data_list <- list(
+data_1,
+data_2,
+data_3,
+data_4,
+data_5
+)
+
+#------------------------------------------------
+# crear objeto mplus
+#------------------------------------------------
+
+mplus_model <- MplusAutomation::mplusObject(
+MODEL = '
+%WITHIN%
+
+y on z_w;
+
+%BETWEEN%
+
+y on v_b;
+y on z_b;
+y on strat_2; 
+y on strat_3; 
+y on strat_4; 
+y on strat_5; 
+y on strat_6; 
+y on strat_7; 
+
+',
+ANALYSIS = '
+TYPE = TWOLEVEL;
+ESTIMATOR = MLR;
+PROCESSORS = 4;
+',
+VARIABLE ='
+CLUSTER  = id_j;
+WEIGHT   = wa1;
+BWEIGHT  = wa2;
+WTSCALE  = UNSCALED;
+BWTSCALE = UNSCALED;
+
+USEVARIABLES =
+y
+z_w
+v_b
+z_b
+strat_2
+strat_3
+strat_4
+strat_5
+strat_6
+strat_7
+;
+
+WITHIN  = z_w;
+BETWEEN = v_b z_b strat_2-strat_7;
+
+',
+OUTPUT ='
+STANDARDIZED
+CINTERVAL
+RESIDUAL
+;
+',
+rdata = data_list,
+imputed = TRUE
+)
+
+
+#------------------------------------------------
+# lista de datos
+#------------------------------------------------
+
+
+mlm_model_data_list <-
+'
+mlm_imp_1.dat
+mlm_imp_2.dat
+mlm_imp_3.dat
+mlm_imp_4.dat
+mlm_imp_5.dat
+'
+
+write(mlm_model_data_list, file="mlm.dat", ncolumns=1)
+
+#------------------------------------------------
+# fit models
+#------------------------------------------------
+
+fit_10 <- MplusAutomation::mplusModeler(mplus_model,
+             modelout = 'mlm.inp',
+             dataout = 'mlm.dat',
+             run = 1L,
+             hashfilename = FALSE,
+             writeData = 'always'
+             )
+
+#------------------------------------------------
+# extraer estimados
+#------------------------------------------------
+
+
+ci_00  <- fit_10 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('ci.unstandardized') %>%
+          tibble::tibble() %>%
+          mutate(term = param)  %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(ll   = low2.5) %>%
+          mutate(ul   = up2.5)  %>%
+          mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+          dplyr::select(index, ll, ul)
+
+r2_00  <- fit_10 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('r2') %>%
+          tibble::tibble() %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(term = c('r2_w', 'r2_b')) %>%
+          mutate(object = c('r2', 'r2')) %>%
+          mutate(e  = as.numeric(est)) %>%
+          mutate(se = as.numeric(se)) %>%
+          mutate(p  = as.numeric(pval)) %>%
+          mutate(missing  = as.numeric(rate_missing)) %>%
+          mutate(index = paste0(term,"_",level)) %>%
+          mutate(control = 'yes') %>%
+          dplyr::select(index, level, object, term, e, se, p, missing, control)
+
+tabla_1_10 <- fit_10 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('unstandardized') %>%
+          tibble::tibble() %>%
+          mutate(term = param) %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(e  = est) %>%
+          mutate(se = se) %>%
+          mutate(p  = pval) %>%
+          mutate(missing  = rate_missing) %>%
+          mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+          dplyr::left_join(., ci_00, by = 'index') %>%
+          mutate(control = 'yes') %>%
+          mutate(object = c(           'pi_w', 'epsilon', 
+                            'gamma_b', 'pi_b', 
+                            'delta_b1','delta_b2','delta_b3',
+                            'delta_b4','delta_b5','delta_b6',
+                            'alpha', 'mu')) %>%
+          dplyr::bind_rows(., r2_00) %>%
+          dplyr::select(level, object, term, e, se, p, missing, ll, ul, control)
+
+#------------------------------------------------
+# mostrar estimados
+#------------------------------------------------
+
+tabla_1_10 %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+## Codigo 1.11 modelo multinivel con `Mplus`, strata como dummy, sin pesos
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con stata
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear datos para mplus
+#------------------------------------------------
+
+data_mixed <- data_model %>%
+              dplyr::filter(ctry_name == 'Paraguay') %>%
+              rename_all(tolower) %>%
+              mutate(strat_1 = dplyr::if_else(id_s == 66, 1, 0 )) %>%
+              mutate(strat_2 = dplyr::if_else(id_s == 67, 1, 0 )) %>%
+              mutate(strat_3 = dplyr::if_else(id_s == 68, 1, 0 )) %>%
+              mutate(strat_4 = dplyr::if_else(id_s == 69, 1, 0 )) %>%
+              mutate(strat_5 = dplyr::if_else(id_s == 70, 1, 0 )) %>%
+              mutate(strat_6 = dplyr::if_else(id_s == 71, 1, 0 )) %>%
+              mutate(strat_7 = dplyr::if_else(id_s == 72, 1, 0 )) %>%
+              dplyr::select(
+              mat_1, mat_2, mat_3, mat_4, mat_5,
+              id_k, id_s, id_j, id_i,
+              wa1, wa2, wi, wj,
+              z_w, z_b, v_b,
+#              strat_1,
+              strat_2,
+              strat_3,
+              strat_4,
+              strat_5,
+              strat_6,
+              strat_7
+              )
+
+#------------------------------------------------
+# crear lista de datos imputados
+#------------------------------------------------
+
+data_1 <- data_mixed %>% mutate(y = mat_1)
+data_2 <- data_mixed %>% mutate(y = mat_2)
+data_3 <- data_mixed %>% mutate(y = mat_3)
+data_4 <- data_mixed %>% mutate(y = mat_4)
+data_5 <- data_mixed %>% mutate(y = mat_5)
+
+data_list <- list(
+data_1,
+data_2,
+data_3,
+data_4,
+data_5
+)
+
+#------------------------------------------------
+# crear objeto mplus
+#------------------------------------------------
+
+mplus_model <- MplusAutomation::mplusObject(
+MODEL = '
+%WITHIN%
+
+y on z_w;
+
+%BETWEEN%
+
+y on v_b;
+y on z_b;
+y on strat_2; 
+y on strat_3; 
+y on strat_4; 
+y on strat_5; 
+y on strat_6; 
+y on strat_7; 
+
+',
+ANALYSIS = '
+TYPE = TWOLEVEL;
+ESTIMATOR = MLR;
+PROCESSORS = 4;
+',
+VARIABLE ='
+CLUSTER  = id_j;
+!WEIGHT   = wa1;
+!BWEIGHT  = wa2;
+!WTSCALE  = UNSCALED;
+!BWTSCALE = UNSCALED;
+
+USEVARIABLES =
+y
+z_w
+v_b
+z_b
+strat_2
+strat_3
+strat_4
+strat_5
+strat_6
+strat_7
+;
+
+WITHIN  = z_w;
+BETWEEN = v_b z_b strat_2-strat_7;
+
+',
+OUTPUT ='
+STANDARDIZED
+CINTERVAL
+RESIDUAL
+;
+',
+rdata = data_list,
+imputed = TRUE
+)
+
+
+#------------------------------------------------
+# lista de datos
+#------------------------------------------------
+
+
+mlm_model_data_list <-
+'
+mlm_imp_1.dat
+mlm_imp_2.dat
+mlm_imp_3.dat
+mlm_imp_4.dat
+mlm_imp_5.dat
+'
+
+write(mlm_model_data_list, file="mlm.dat", ncolumns=1)
+
+#------------------------------------------------
+# fit models
+#------------------------------------------------
+
+fit_11 <- MplusAutomation::mplusModeler(mplus_model,
+             modelout = 'mlm.inp',
+             dataout = 'mlm.dat',
+             run = 1L,
+             hashfilename = FALSE,
+             writeData = 'always'
+             )
+
+#------------------------------------------------
+# extraer estimados
+#------------------------------------------------
+
+
+ci_00  <- fit_11 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('ci.unstandardized') %>%
+          tibble::tibble() %>%
+          mutate(term = param)  %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(ll   = low2.5) %>%
+          mutate(ul   = up2.5)  %>%
+          mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+          dplyr::select(index, ll, ul)
+
+r2_00  <- fit_11 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('r2') %>%
+          tibble::tibble() %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(term = c('r2_w', 'r2_b')) %>%
+          mutate(object = c('r2', 'r2')) %>%
+          mutate(e  = as.numeric(est)) %>%
+          mutate(se = as.numeric(se)) %>%
+          mutate(p  = as.numeric(pval)) %>%
+          mutate(missing  = as.numeric(rate_missing)) %>%
+          mutate(index = paste0(term,"_",level)) %>%
+          mutate(control = 'yes') %>%
+          dplyr::select(index, level, object, term, e, se, p, missing, control)
+
+tabla_1_11 <- fit_11 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('unstandardized') %>%
+          tibble::tibble() %>%
+          mutate(term = param) %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(e  = est) %>%
+          mutate(se = se) %>%
+          mutate(p  = pval) %>%
+          mutate(missing  = rate_missing) %>%
+          mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+          dplyr::left_join(., ci_00, by = 'index') %>%
+          mutate(control = 'yes') %>%
+          mutate(object = c(           'pi_w', 'epsilon', 
+                            'gamma_b', 'pi_b', 
+                            'delta_b1','delta_b2','delta_b3',
+                            'delta_b4','delta_b5','delta_b6',
+                            'alpha', 'mu')) %>%
+          dplyr::bind_rows(., r2_00) %>%
+          dplyr::select(level, object, term, e, se, p, missing, ll, ul, control)
+
+#------------------------------------------------
+# mostrar estimados
+#------------------------------------------------
+
+tabla_1_11 %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+# Codigo 1.12 modelo multinivel con `Mplus` sin estratificación
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con mplus
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear datos para mplus
+#------------------------------------------------
+
+data_mixed <- data_model %>%
+              dplyr::filter(ctry_name == 'Paraguay') %>%
+              rename_all(tolower) %>%
+              dplyr::select(
+              mat_1, mat_2, mat_3, mat_4, mat_5,
+              id_k, id_s, id_j, id_i,
+              wb1, wb2, wi, wj,
+              z_w, z_b, v_b
+              )
+
+#------------------------------------------------
+# crear lista de datos imputados
+#------------------------------------------------
+
+data_1 <- data_mixed %>% mutate(y = mat_1)
+data_2 <- data_mixed %>% mutate(y = mat_2)
+data_3 <- data_mixed %>% mutate(y = mat_3)
+data_4 <- data_mixed %>% mutate(y = mat_4)
+data_5 <- data_mixed %>% mutate(y = mat_5)
+
+data_list <- list(
+data_1,
+data_2,
+data_3,
+data_4,
+data_5
+)
+
+#------------------------------------------------
+# crear objeto mplus
+#------------------------------------------------
+
+mplus_model <- MplusAutomation::mplusObject(
+MODEL = '
+%WITHIN%
+
+y on z_w;
+
+%BETWEEN%
+
+y on v_b;
+y on z_b;
+
+',
+ANALYSIS = '
+TYPE = TWOLEVEL;
+ESTIMATOR = MLR;
+PROCESSORS = 4;
+',
+VARIABLE ='
+CLUSTER  = id_j;
+WEIGHT   = wi;
+BWEIGHT  = wj;
+WTSCALE  = ECLUSTER;
+BWTSCALE = SAMPLE;
+
+USEVARIABLES =
+y
+z_w
+v_b
+z_b
+;
+
+WITHIN  = z_w;
+BETWEEN = v_b z_b;
+
+',
+OUTPUT ='
+STANDARDIZED
+CINTERVAL
+RESIDUAL
+;
+',
+rdata = data_list,
+imputed = TRUE
+)
+
+
+#------------------------------------------------
+# lista de datos
+#------------------------------------------------
+
+
+mlm_model_data_list <-
+'
+mlm_imp_1.dat
+mlm_imp_2.dat
+mlm_imp_3.dat
+mlm_imp_4.dat
+mlm_imp_5.dat
+'
+
+write(mlm_model_data_list, file="mlm.dat", ncolumns=1)
+
+#------------------------------------------------
+# fit models
+#------------------------------------------------
+
+fit_12 <- MplusAutomation::mplusModeler(mplus_model,
+             modelout = 'mlm.inp',
+             dataout = 'mlm.dat',
+             run = 1L,
+             hashfilename = FALSE,
+             writeData = 'always'
+             )
+
+#------------------------------------------------
+# extraer estimados
+#------------------------------------------------
+
+
+ci_00  <- fit_12 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('ci.unstandardized') %>%
+          tibble::tibble() %>%
+          mutate(term = param)  %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(ll   = low2.5) %>%
+          mutate(ul   = up2.5)  %>%
+          mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+          dplyr::select(index, ll, ul)
+
+r2_00  <- fit_12 %>%
+          purrr::pluck('results') %>%
+          purrr::pluck('parameters') %>%
+          purrr::pluck('r2') %>%
+          tibble::tibble() %>%
+          mutate(level  = tolower(BetweenWithin)) %>%
+          mutate(term = c('r2_w', 'r2_b')) %>%
+          mutate(object = c('r2', 'r2')) %>%
+          mutate(e  = as.numeric(est)) %>%
+          mutate(se = as.numeric(se)) %>%
+          mutate(p  = as.numeric(pval)) %>%
+          mutate(missing  = as.numeric(rate_missing)) %>%
+          mutate(index = paste0(term,"_",level)) %>%
+          mutate(control = 'yes') %>%
+          dplyr::select(index, level, object, term, e, se, p, missing, control)
+
+tabla_1_12 <- fit_12 %>%
+             purrr::pluck('results') %>%
+             purrr::pluck('parameters') %>%
+             purrr::pluck('unstandardized') %>%
+             tibble::tibble() %>%
+             mutate(term = param) %>%
+             mutate(level  = tolower(BetweenWithin)) %>%
+             mutate(e  = est) %>%
+             mutate(se = se) %>%
+             mutate(p  = pval) %>%
+             mutate(missing  = rate_missing) %>%
+             mutate(index = paste0(paramHeader, "_", term,"_",level)) %>%
+             dplyr::left_join(., ci_00, by = 'index') %>%
+             mutate(control = 'yes') %>%
+             mutate(object = c(           'pi_w', 'epsilon', 
+                               'gamma_b', 'pi_b', 'alpha', 'mu')) %>%
+             dplyr::bind_rows(., r2_00) %>%
+             dplyr::select(level, object, term, e, se, p, missing, ll, ul, control)
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_1_12 %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+## Comparación
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# comparacion de resultados
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# mostrar estimados
+#------------------------------------------------
+
+texreg::screenreg(list(fit_11, fit_4, fit_8, fit_9, fit_10), 
+    type = 'un',
+    star.symbol = "*", 
+    center = TRUE, 
+    doctype = FALSE,
+    dcolumn = TRUE, 
+    booktabs = TRUE,
+    single.row=TRUE,
+    custom.model.names = 
+    c(
+      'sin diseño',
+      'con diseño (mplus wb2)',
+      'STRATA efectos fijos',
+      'STRATA efectos fijos (wb2)',
+      'STRATA efectos fijos (wa2)'
+      )
+    )
+
+
+#------------------------------------------------
+# con y sin estratificación
+#------------------------------------------------
+
+texreg::screenreg(list(fit_4, fit_12), 
+    type = 'un',
+    star.symbol = "*", 
+    center = TRUE, 
+    doctype = FALSE,
+    dcolumn = TRUE, 
+    booktabs = TRUE,
+    single.row=TRUE,
+    custom.model.names = 
+    c(
+      'con diseño (mplus wb2)',
+      'sin estratos'
+      )
+    )
+
+
+#------------------------------------------------
+# estratos como efectos fijos
+#------------------------------------------------
+
+texreg::screenreg(list(fit_4, fit_8), 
+    type = 'un',
+    star.symbol = "*", 
+    center = TRUE, 
+    doctype = FALSE,
+    dcolumn = TRUE, 
+    booktabs = TRUE,
+    single.row=TRUE,
+    custom.model.names = 
+    c(
+      'con diseño (mplus wb2)',
+      'estratos como efectos fijos'
+      )
+    )
+
+
+
+
+```
+
+
+# Anexo 2: estimaciones ignorando estratificación
+
+
+## Codigo 1.13 modelo multinivel con `STATA` ignorando estratos
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con stata
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# guardar datos en stata
+#------------------------------------------------
+
+data_model %>%
+dplyr::filter(ctry_name == 'Paraguay') %>%
+haven::write_dta(., 'erce_paraguay_a6.dta', version = 12)
+
+#------------------------------------------------
+# configurar libreria RStata
+#------------------------------------------------
+
+library(RStata)
+options("RStata.StataPath"='/Applications/Stata/StataMP.app/Contents/MacOS/stata-mp')
+options("RStata.StataVersion"=15)
+
+#------------------------------------------------
+# codigo stata
+#------------------------------------------------
+
+stata_code <- '
+
+* ===============================================.
+* define folder and open data
+* ===============================================.
+
+cd "/Users/d/"
+use "erce_paraguay_a6.dta"
+
+* ===============================.
+* fit mlm model with @pv
+* ===============================.
+
+pv, pv(MAT_1 MAT_2 MAT_3 MAT_4 MAT_5): ///
+mixed @pv               ///
+z_w                     ///
+z_b                     ///
+v_b                     ///
+[pw=wb1] || id_j:, ml pweight(wb2)
+estimates store m01
+
+* ===============================.
+* variance
+* ===============================.
+
+/*return residual variance */
+_diparm lnsig_e,  f(exp(@)^2) d(2*exp(@)^2)    
+/*return between  variance */
+_diparm lns1_1_1, f(exp(@)^2) d(2*exp(@)^2)  
+
+* ===============================.
+* estimates
+* ===============================.
+
+esttab m01, b(%9.2f) se(%9.2f) wide transform(ln*: exp(2*@) exp(2*@))
+
+'
+
+#----------------------------------------------------------
+# mostrar output
+#----------------------------------------------------------
+
+RStata::stata(stata_code)
+
+#----------------------------------------------------------
+# crear tabla
+#----------------------------------------------------------
+
+tabla_1_13 <- read.table(
+text = "
+variable            e          star       se
+z_w                 12.51      '***'      2.26
+z_b                 28.12      '***'      7.00
+v_b                 22.48      '*  '     10.55
+_cons              655.07      '***'      4.78
+",
+header=TRUE, stringsAsFactors = FALSE)
+
+
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_1_13 %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+
+## Codigo 1.14 modelo multinivel con `WeMix` ignorando estratos
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# modelo multinivel con WeMix
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# configurar consola
+#------------------------------------------------
+
+options(scipen = 999)
+options(digits = 10)
+
+#------------------------------------------------
+# survey object
+#------------------------------------------------
+
+data_wemix <- data_model %>%
+              dplyr::filter(ctry_name == 'Paraguay')
+
+#------------------------------------------------
+# fit model
+#------------------------------------------------
+
+wemix_pv_results <- mitools::withPV(
+   mapping = mat ~ MAT_1 + MAT_2 + MAT_3 + MAT_4 + MAT_5, #<<
+   data = data_wemix,
+   action = quote(
+WeMix::mix(
+  mat ~ 1 + z_w + z_b + v_b + (1 | id_j),
+  data = data_wemix,
+  weights = c('wb1','wb2'),
+  cWeights = TRUE)
+    ),
+   rewrite=TRUE
+   )
+
+
+#------------------------------------------------
+# tabla
+#------------------------------------------------
+
+options(scipen = 999)
+options(digits = 4)
+
+tabla_1_14 <- summary(
+  miceadds::pool_mi(
+  qhat = list(
+    wemix_pv_results[[1]]$coef,
+    wemix_pv_results[[2]]$coef,
+    wemix_pv_results[[3]]$coef,
+    wemix_pv_results[[4]]$coef,
+    wemix_pv_results[[5]]$coef
+    ), 
+  se   = list(
+    wemix_pv_results[[1]]$SE,
+    wemix_pv_results[[2]]$SE,
+    wemix_pv_results[[3]]$SE,
+    wemix_pv_results[[4]]$SE,
+    wemix_pv_results[[5]]$SE
+    )
+  )
+) %>%
+tibble::rownames_to_column("term") %>%
+tibble::as_tibble()
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_1_14 %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+

@@ -1,0 +1,979 @@
+---
+title: 'LLECE: Taller de Análisis II'
+subtitle: "Descriptivos"
+author: "dacarras"
+date: 'Marzo 2 de 2022'
+output:
+  html_document:
+    theme: paper
+    highlight: kate
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    fig_width: 10 
+    fig_height: 8 
+---
+
+<style>
+  .main-container {
+    max-width: 1600px !important;
+  }
+  .list-group-item.active, 
+  .list-group-item.active:focus, 
+  .list-group-item.active:hover {
+    background-color: #373334;
+  }
+</style>
+
+
+```{r setup, include=FALSE}
+#----------------------------------------------------------
+# setup
+#----------------------------------------------------------
+
+
+# knitr option
+knitr::opts_chunk$set(dev = 'png')
+options(knitr.kable.NA = '', digits = 2)
+options(scipen = 999999)
+
+# remove all previous objects
+rm(list = ls())
+
+# fonts
+Sys.setenv(LANG="en_US.UTF-8")
+
+
+# ------------------------------------------------------
+# get times
+# ------------------------------------------------------
+
+start_time <- Sys.time()
+
+
+```
+
+# Librerias a instalar
+
+```{r echo = TRUE, eval = FALSE}
+
+# -------------------------------------------------------------------
+# librerias
+# -------------------------------------------------------------------
+
+# Nota: instalar librerias manualmente.
+
+#------------------------------------------------
+# librerias para instalar librerias remotas
+#------------------------------------------------
+
+install.packages('devtools')
+install.packages('remotes')
+
+#------------------------------------------------
+# libreria ERCE con datos
+#------------------------------------------------
+
+devtools::install_github(
+  'dacarras/erce',
+  auth_token = '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',
+  force = TRUE)
+
+#------------------------------------------------
+# librerías en uso
+#------------------------------------------------
+
+install.packages('tidyverse')
+install.packages('mitools')
+install.packages('survey')
+install.packages('srvyr')
+
+#------------------------------------------------
+# libreria con lodown::MIsvyciprop()
+#------------------------------------------------
+
+remotes::install_github("ajdamico/lodown")
+
+
+```
+
+
+
+# Código 1.1: pesos BRR con pesos estandarizados o pesos SENATE
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# BRR con pesos senate
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# BRR/WT factor del BRR sobre los observados
+#------------------------------------------------
+
+data_a6 <- erce::erce_2019_qa6 %>%
+mutate(repws001 = BRR1/WT * WS) %>%
+mutate(repws002 = BRR2/WT * WS) %>%
+mutate(repws003 = BRR3/WT * WS) %>%
+mutate(repws004 = BRR4/WT * WS) %>%
+mutate(repws005 = BRR5/WT * WS) %>%
+mutate(repws006 = BRR6/WT * WS) %>%
+mutate(repws007 = BRR7/WT * WS) %>%
+mutate(repws008 = BRR8/WT * WS) %>%
+mutate(repws009 = BRR9/WT * WS) %>%
+mutate(repws010 = BRR10/WT * WS) %>%
+mutate(repws011 = BRR11/WT * WS) %>%
+mutate(repws012 = BRR12/WT * WS) %>%
+mutate(repws013 = BRR13/WT * WS) %>%
+mutate(repws014 = BRR14/WT * WS) %>%
+mutate(repws015 = BRR15/WT * WS) %>%
+mutate(repws016 = BRR16/WT * WS) %>%
+mutate(repws017 = BRR17/WT * WS) %>%
+mutate(repws018 = BRR18/WT * WS) %>%
+mutate(repws019 = BRR19/WT * WS) %>%
+mutate(repws020 = BRR20/WT * WS) %>%
+mutate(repws021 = BRR21/WT * WS) %>%
+mutate(repws022 = BRR22/WT * WS) %>%
+mutate(repws023 = BRR23/WT * WS) %>%
+mutate(repws024 = BRR24/WT * WS) %>%
+mutate(repws025 = BRR25/WT * WS) %>%
+mutate(repws026 = BRR26/WT * WS) %>%
+mutate(repws027 = BRR27/WT * WS) %>%
+mutate(repws028 = BRR28/WT * WS) %>%
+mutate(repws029 = BRR29/WT * WS) %>%
+mutate(repws030 = BRR30/WT * WS) %>%
+mutate(repws031 = BRR31/WT * WS) %>%
+mutate(repws032 = BRR32/WT * WS) %>%
+mutate(repws033 = BRR33/WT * WS) %>%
+mutate(repws034 = BRR34/WT * WS) %>%
+mutate(repws035 = BRR35/WT * WS) %>%
+mutate(repws036 = BRR36/WT * WS) %>%
+mutate(repws037 = BRR37/WT * WS) %>%
+mutate(repws038 = BRR38/WT * WS) %>%
+mutate(repws039 = BRR39/WT * WS) %>%
+mutate(repws040 = BRR40/WT * WS) %>%
+mutate(repws041 = BRR41/WT * WS) %>%
+mutate(repws042 = BRR42/WT * WS) %>%
+mutate(repws043 = BRR43/WT * WS) %>%
+mutate(repws044 = BRR44/WT * WS) %>%
+mutate(repws045 = BRR45/WT * WS) %>%
+mutate(repws046 = BRR46/WT * WS) %>%
+mutate(repws047 = BRR47/WT * WS) %>%
+mutate(repws048 = BRR48/WT * WS) %>%
+mutate(repws049 = BRR49/WT * WS) %>%
+mutate(repws050 = BRR50/WT * WS) %>%
+mutate(repws051 = BRR51/WT * WS) %>%
+mutate(repws052 = BRR52/WT * WS) %>%
+mutate(repws053 = BRR53/WT * WS) %>%
+mutate(repws054 = BRR54/WT * WS) %>%
+mutate(repws055 = BRR55/WT * WS) %>%
+mutate(repws056 = BRR56/WT * WS) %>%
+mutate(repws057 = BRR57/WT * WS) %>%
+mutate(repws058 = BRR58/WT * WS) %>%
+mutate(repws059 = BRR59/WT * WS) %>%
+mutate(repws060 = BRR60/WT * WS) %>%
+mutate(repws061 = BRR61/WT * WS) %>%
+mutate(repws062 = BRR62/WT * WS) %>%
+mutate(repws063 = BRR63/WT * WS) %>%
+mutate(repws064 = BRR64/WT * WS) %>%
+mutate(repws065 = BRR65/WT * WS) %>%
+mutate(repws066 = BRR66/WT * WS) %>%
+mutate(repws067 = BRR67/WT * WS) %>%
+mutate(repws068 = BRR68/WT * WS) %>%
+mutate(repws069 = BRR69/WT * WS) %>%
+mutate(repws070 = BRR70/WT * WS) %>%
+mutate(repws071 = BRR71/WT * WS) %>%
+mutate(repws072 = BRR72/WT * WS) %>%
+mutate(repws073 = BRR73/WT * WS) %>%
+mutate(repws074 = BRR74/WT * WS) %>%
+mutate(repws075 = BRR75/WT * WS) %>%
+mutate(repws076 = BRR76/WT * WS) %>%
+mutate(repws077 = BRR77/WT * WS) %>%
+mutate(repws078 = BRR78/WT * WS) %>%
+mutate(repws079 = BRR79/WT * WS) %>%
+mutate(repws080 = BRR80/WT * WS) %>%
+mutate(repws081 = BRR81/WT * WS) %>%
+mutate(repws082 = BRR82/WT * WS) %>%
+mutate(repws083 = BRR83/WT * WS) %>%
+mutate(repws084 = BRR84/WT * WS) %>%
+mutate(repws085 = BRR85/WT * WS) %>%
+mutate(repws086 = BRR86/WT * WS) %>%
+mutate(repws087 = BRR87/WT * WS) %>%
+mutate(repws088 = BRR88/WT * WS) %>%
+mutate(repws089 = BRR89/WT * WS) %>%
+mutate(repws090 = BRR90/WT * WS) %>%
+mutate(repws091 = BRR91/WT * WS) %>%
+mutate(repws092 = BRR92/WT * WS) %>%
+mutate(repws093 = BRR93/WT * WS) %>%
+mutate(repws094 = BRR94/WT * WS) %>%
+mutate(repws095 = BRR95/WT * WS) %>%
+mutate(repws096 = BRR96/WT * WS) %>%
+mutate(repws097 = BRR97/WT * WS) %>%
+mutate(repws098 = BRR98/WT * WS) %>%
+mutate(repws099 = BRR99/WT * WS) %>%
+mutate(repws100 = BRR100/WT * WS) 
+
+```
+
+
+# Codigo 1.2: porcentaje con variable observada
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# estudiantes que han repetido
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# inspeccionar variable original
+#------------------------------------------------
+
+dplyr::count(data_a6, E6IT16, REPC)
+
+
+#------------------------------------------------
+# crear base BRR
+#------------------------------------------------
+
+library(srvyr)
+data_brr <- data_a6 %>%
+            erce::remove_labels() %>%
+            as_survey_rep(
+            type = 'Fay', 
+            repweights = starts_with('repws'),
+            weights = 'WS',
+            combined_weights = TRUE,
+            rho = .5,
+            mse = TRUE
+            )
+
+# Opción: corección a unidad primaria de muestreo que resulte 
+# única al estrato
+
+library(survey)
+options(survey.lonely.psu="adjust")
+
+#------------------------------------------------
+# producir porcentaje regional
+#------------------------------------------------
+ 
+tabla_1 <- data_brr %>%
+summarize(
+  proportion = survey_mean(REPC,na.rm=TRUE, 
+  prop_method = 'logit',
+  vartype = "ci", 
+  level = c(0.95)
+    )
+  )
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+knitr::kable(tabla_1, digits = 2)
+
+```
+
+
+# Codigo 1.3: porcentaje con variable observada (TSL)
+
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# estudiantes que han repetido
+# -------------------------------------------------------------------
+#------------------------------------------------
+# unir datos y crear cluster únicos
+#------------------------------------------------
+
+erce_a6 <- data_a6 %>%
+erce::remove_labels() %>%
+mutate(id_k = as.numeric(as.factor(paste0(IDCNTRY)))) %>%
+mutate(id_s = as.numeric(as.factor(paste0(IDCNTRY, "_", STRATA)))) %>%
+mutate(id_j = as.numeric(as.factor(paste0(IDCNTRY, "_", IDSCHOOL)))) %>%
+mutate(id_i = seq(1:nrow(.))) 
+
+#------------------------------------------------
+# base de datos con diseño
+#------------------------------------------------
+# survey method: taylor series linearization library(srvyr)
+library(srvyr)
+data_tsl <- erce_a6 %>% 
+            as_survey_design(
+            strata = id_s, 
+            ids = id_j, 
+            weights = WS, 
+            nest = TRUE)
+# Opción: corección a unidad primaria de muestreo que resulte 
+# única al estrato
+library(survey)
+options(survey.lonely.psu="adjust")
+#------------------------------------------------
+# producir porcentaje regional
+#------------------------------------------------
+tabla_2 <- data_tsl %>%
+summarize(
+  proportion = survey_mean(REPC,na.rm=TRUE, 
+  prop_method = 'logit',
+  vartype = "ci", 
+  level = c(0.95)
+    )
+  )
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+knitr::kable(tabla_2, digits = 2)
+
+
+```
+
+# Codigo 1.4: porcentaje con variable observada, para un solo país (BRR)
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# estudiantes que han repetido
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear base BRR para un país
+#------------------------------------------------
+
+library(srvyr)
+ury_brr <- data_a6 %>%
+           erce::remove_labels() %>%
+           dplyr::filter(COUNTRY == 'URY') %>%
+           as_survey_rep(
+           type = 'Fay', 
+           repweights = starts_with('repws'),
+           weights = 'WS',
+           combined_weights = TRUE,
+           rho = .5,
+           mse = TRUE
+           )
+
+# Opción: corección a unidad primaria de muestreo que resulte 
+# única al estrato
+
+library(survey)
+options(survey.lonely.psu="adjust")
+
+#------------------------------------------------
+# producir porcentaje regional
+#------------------------------------------------
+
+tabla_3 <- ury_brr %>%
+summarize(
+  proportion = survey_mean(REPC,na.rm=TRUE, 
+  prop_method = 'logit',
+  vartype = "ci", 
+  level = c(0.95)
+    )
+  )
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+knitr::kable(tabla_3, digits = 2)
+
+
+```
+
+# Codigo 1.5: percentiles para un país (BRR)
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# medianas y percentiles de un país
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear base BRR para un país
+#------------------------------------------------
+
+library(srvyr)
+ury_brr <- data_a6 %>%
+           erce::remove_labels() %>%
+           dplyr::filter(COUNTRY == 'URY') %>%
+           as_survey_rep(
+           type = 'Fay', 
+           repweights = starts_with('repws'),
+           weights = 'WS',
+           combined_weights = TRUE,
+           rho = .5,
+           mse = TRUE
+           )
+
+# Opción: corección a unidad primaria de muestreo que resulte 
+# única al estrato
+
+library(survey)
+options(survey.lonely.psu="adjust")
+
+#------------------------------------------------
+# producir percentiles
+#------------------------------------------------
+
+tabla_4 <- ury_brr %>%
+summarize(
+  per  = survey_quantile(ISECF,na.rm=TRUE, 
+          quantiles = c(.25, .50, .75),
+          vartype = "ci", 
+          level = c(0.95)
+          )
+  )
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_4 %>%
+knitr::kable(. , digits = 2)
+
+
+```
+
+# Codigo 1.6: medianas y percentil 50 para un país (BRR)
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# medianas y percentiles de un país
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear base BRR para un país
+#------------------------------------------------
+
+library(srvyr)
+ury_brr <- data_a6 %>%
+           erce::remove_labels() %>%
+           dplyr::filter(COUNTRY == 'URY') %>%
+           as_survey_rep(
+           type = 'Fay', 
+           repweights = starts_with('repws'),
+           weights = 'WS',
+           combined_weights = TRUE,
+           rho = .5,
+           mse = TRUE
+           )
+
+# Opción: corección a unidad primaria de muestreo que resulte 
+# única al estrato
+
+library(survey)
+options(survey.lonely.psu="adjust")
+
+#------------------------------------------------
+# producir percentil 50 y mediana
+#------------------------------------------------
+ 
+tabla_5 <- ury_brr %>%
+summarize(
+  per  = survey_quantile(ISECF,na.rm=TRUE, 
+          quantiles = c(.50),
+          vartype = "ci", 
+          level = c(0.95)
+          ),
+  med = survey_median(ISECF,na.rm=TRUE,
+           vartype = "ci", 
+           level = c(0.95)
+          )
+  )
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_5 %>%
+tidyr::pivot_longer(
+  names(.),
+  names_to = 'quantiles',
+  values_to = 'values'
+  ) %>%
+arrange(quantiles) %>%
+knitr::kable(. , digits = 2)
+
+# Nota: estamos "volteando" la tabla con
+#       tidyr::pivot_longer, 
+#       para que sea más legible.
+
+```
+
+# Codigo 1.7: medias de varios países (BRR)
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# medianas y percentiles de 
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear base BRR para la region
+#------------------------------------------------
+
+library(srvyr)
+erce_brr <- data_a6 %>%
+            erce::remove_labels() %>%
+            as_survey_rep(
+            type = 'Fay', 
+            repweights = starts_with('repws'),
+            weights = 'WS',
+            combined_weights = TRUE,
+            rho = .5,
+            mse = TRUE
+            )
+
+# Opción: corección a unidad primaria de muestreo que resulte 
+# única al estrato
+
+library(survey)
+options(survey.lonely.psu="adjust")
+
+#------------------------------------------------
+# producir medias para cada país
+#------------------------------------------------
+ 
+tabla_6 <- erce_brr %>%
+           group_by(COUNTRY) %>%
+summarize(
+  mean = survey_mean(ISECF,na.rm=TRUE, 
+  vartype = "ci", 
+  level = c(0.95)
+    )
+  )
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+tabla_6 %>%
+arrange(mean) %>%
+knitr::kable(. , digits = 2)
+
+```
+
+# Codigo 1.8: Porcentajes de estudiantes sobre el mínimo de competencia de logro en Lenguaje (Estudiantes 6to Grado, ERCE 2019)
+
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# porcentajes con valores plausibles
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# cluster únicos
+#------------------------------------------------
+           
+data_a6 <- data_a6 %>%
+erce::remove_labels() %>%
+mutate(id_s = as.numeric(as.factor(paste0(IDCNTRY, "_", STRATA)))) %>%
+mutate(id_j = as.numeric(as.factor(paste0(IDCNTRY, "_", IDSCHOOL)))) %>%
+mutate(id_i = seq(1:nrow(.)))
+
+#------------------------------------------------
+# variable dummy para los niveles esperados
+#------------------------------------------------
+
+data_a6 <- data_a6 %>%
+           mutate(all = 1) %>%
+           mutate(lan_min_1 = case_when(
+           LAN_L1 == 'I'   ~ 0,
+           LAN_L1 == 'II'  ~ 0,
+           LAN_L1 == 'III' ~ 1,
+           LAN_L1 == 'IV'  ~ 1)) %>%
+           mutate(lan_min_2 = case_when(
+           LAN_L2 == 'I'   ~ 0,
+           LAN_L2 == 'II'  ~ 0,
+           LAN_L2 == 'III' ~ 1,
+           LAN_L2 == 'IV'  ~ 1)) %>%
+           mutate(lan_min_3 = case_when(
+           LAN_L3 == 'I'   ~ 0,
+           LAN_L3 == 'II'  ~ 0,
+           LAN_L3 == 'III' ~ 1,
+           LAN_L3 == 'IV'  ~ 1)) %>%
+           mutate(lan_min_4 = case_when(
+           LAN_L4 == 'I'   ~ 0,
+           LAN_L4 == 'II'  ~ 0,
+           LAN_L4 == 'III' ~ 1,
+           LAN_L4 == 'IV'  ~ 1)) %>%
+           mutate(lan_min_5 = case_when(
+           LAN_L5 == 'I'   ~ 0,
+           LAN_L5 == 'II'  ~ 0,
+           LAN_L5 == 'III' ~ 1,
+           LAN_L5 == 'IV'  ~ 1)
+           )
+
+#------------------------------------------------
+# base de datos con diseño
+#------------------------------------------------
+
+erce_tsl  <- survey::svydesign(
+             data    = data_a6, 
+             weights = ~WS,
+             strata  = ~id_s,
+             id = ~id_j,
+             nest = TRUE)
+
+# Opción: corección a unidad primaria de muestreo que resulte 
+# única al estrato
+
+library(survey)
+options(survey.lonely.psu="adjust")
+
+# Nota: withPV() solo funciona con Taylor Series Linearization
+
+
+dplyr::glimpse(data_a6)
+
+#------------------------------------------------
+# producir porcentajes con valores plausibles
+#------------------------------------------------
+
+options(scipen = 999)
+options(digits = 5)
+
+
+tabla_7 <- withPV(
+   mapping = lan_min ~ lan_min_1 + lan_min_2 + lan_min_3 + lan_min_4 + lan_min_5,
+   data = erce_tsl,
+   action = quote(
+   svyby( ~lan_min, 
+    by = ~COUNTRY, 
+    design = erce_tsl,
+    FUN = svymean
+      )
+    )
+   )
+
+#------------------------------------------------
+# combinar resultados
+#------------------------------------------------
+
+library(mitools)
+summary(mitools::MIcombine(tabla_7))
+
+
+```
+
+# Codigo 1.9: Porcentajes de estudiantes sobre el mínimo de competencia de logo en Lenguaje (BRR) (Estudiantes 6to Grado, ERCE 2019)
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# porcentajes con valores plausibles con BRR
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# cluster únicos y recodificaciones
+#------------------------------------------------
+           
+arg_a6 <- data_a6 %>%
+          erce::remove_labels() %>%
+          dplyr::filter(COUNTRY == 'ARG') %>%
+mutate(id_s = as.numeric(as.factor(paste0(IDCNTRY, "_", STRATA)))) %>%
+mutate(id_j = as.numeric(as.factor(paste0(IDCNTRY, "_", IDSCHOOL)))) %>%
+mutate(id_i = seq(1:nrow(.))) %>%
+           mutate(all = 1) %>%
+           mutate(lan_min_1 = case_when(
+           LAN_L1 == 'I'   ~ 0,
+           LAN_L1 == 'II'  ~ 0,
+           LAN_L1 == 'III' ~ 1,
+           LAN_L1 == 'IV'  ~ 1)) %>%
+           mutate(lan_min_2 = case_when(
+           LAN_L2 == 'I'   ~ 0,
+           LAN_L2 == 'II'  ~ 0,
+           LAN_L2 == 'III' ~ 1,
+           LAN_L2 == 'IV'  ~ 1)) %>%
+           mutate(lan_min_3 = case_when(
+           LAN_L3 == 'I'   ~ 0,
+           LAN_L3 == 'II'  ~ 0,
+           LAN_L3 == 'III' ~ 1,
+           LAN_L3 == 'IV'  ~ 1)) %>%
+           mutate(lan_min_4 = case_when(
+           LAN_L4 == 'I'   ~ 0,
+           LAN_L4 == 'II'  ~ 0,
+           LAN_L4 == 'III' ~ 1,
+           LAN_L4 == 'IV'  ~ 1)) %>%
+           mutate(lan_min_5 = case_when(
+           LAN_L5 == 'I'   ~ 0,
+           LAN_L5 == 'II'  ~ 0,
+           LAN_L5 == 'III' ~ 1,
+           LAN_L5 == 'IV'  ~ 1)
+           )
+
+#------------------------------------------------
+# distinguir entre valores plausibles y otras variables
+#------------------------------------------------
+
+plausible_values <- dplyr::select(arg_a6, 
+                    lan_min_1, lan_min_2, lan_min_3, lan_min_4, lan_min_5)
+
+
+non_plausible_values  <- dplyr::select(arg_a6, -one_of(names(plausible_values)))
+
+# -----------------------------------------------
+# crear bases de datos por valor plausible
+# -----------------------------------------------
+
+data_1 <- non_plausible_values %>%
+          dplyr::left_join(., dplyr::select(arg_a6, id_i, lan_min_1), by = 'id_i') %>% 
+          rename(lan_min = lan_min_1)
+
+data_2 <- non_plausible_values %>%
+          dplyr::left_join(., dplyr::select(arg_a6, id_i, lan_min_2), by = 'id_i') %>% 
+          rename(lan_min = lan_min_2)
+
+data_3 <- non_plausible_values %>%
+          dplyr::left_join(., dplyr::select(arg_a6, id_i, lan_min_3), by = 'id_i') %>% 
+          rename(lan_min = lan_min_3)
+
+data_4 <- non_plausible_values %>%
+          dplyr::left_join(., dplyr::select(arg_a6, id_i, lan_min_4), by = 'id_i') %>% 
+          rename(lan_min = lan_min_4)
+
+data_5 <- non_plausible_values %>%
+          dplyr::left_join(., dplyr::select(arg_a6, id_i, lan_min_5), by = 'id_i') %>% 
+          rename(lan_min = lan_min_5)
+
+
+#------------------------------------------------
+# crear lista de datos imputados
+#------------------------------------------------
+
+arg_a6_imputed <- mitools::imputationList(
+                list(data_1, data_2, data_3, data_4, data_5)
+                )
+
+#------------------------------------------------
+# crear objeto BRR con los datos imputados
+#------------------------------------------------
+
+library(survey)
+arg_brr <- survey::svrepdesign(
+                data    = arg_a6_imputed,
+                type    = 'Fay', 
+                rho     = .5,
+                weights = ~WS,
+                repweights = "repws[0-9]+",
+                combined.weights = TRUE
+                )
+
+
+library(survey)
+options(survey.lonely.psu="adjust")
+
+#------------------------------------------------
+# producir porcentajes con valores plausibles
+#------------------------------------------------
+
+options(scipen = 999)
+options(digits = 5)
+
+tabla_8 <- lodown::MIsvyciprop(
+            ~lan_min, 
+            design = arg_brr, 
+            method = "logit", 
+            level = 0.95, 
+            df = mean(unlist(lapply(arg_brr$designs,survey::degf)))
+            )
+
+#------------------------------------------------
+# mostrar resultados
+#------------------------------------------------
+
+tabla_8
+
+
+
+```
+
+
+# Codigo 1.10: percentiles con valores plausibles (BRR)
+
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# percentiles con valores plausibles
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# cluster únicos
+#------------------------------------------------
+
+data_example <- data_a6 %>%
+                erce::remove_labels() %>%
+                mutate(id_j = as.numeric(as.factor(paste0(COUNTRY, "_", IDSCHOOL)))) %>%
+                mutate(id_i = seq(1:nrow(.)))
+
+#------------------------------------------------
+# separar valores plausibles
+#------------------------------------------------
+
+plausible_values <- dplyr::select(data_example, LAN_1, LAN_2, LAN_3, LAN_4, LAN_5)
+
+
+non_plausible_values  <- dplyr::select(data_example, -one_of(names(plausible_values)))
+
+
+# -----------------------------------------------
+# crear lista de datos imputados
+# -----------------------------------------------
+
+data_1 <- non_plausible_values %>%
+          dplyr::left_join(., dplyr::select(data_example, id_i, LAN_1), by = 'id_i') %>% 
+          rename(lan = LAN_1)
+
+data_2 <- non_plausible_values %>%
+          dplyr::left_join(., dplyr::select(data_example, id_i, LAN_2), by = 'id_i') %>% 
+          rename(lan = LAN_2)
+
+data_3 <- non_plausible_values %>%
+          dplyr::left_join(., dplyr::select(data_example, id_i, LAN_3), by = 'id_i') %>% 
+          rename(lan = LAN_3)
+
+data_4 <- non_plausible_values %>%
+          dplyr::left_join(., dplyr::select(data_example, id_i, LAN_4), by = 'id_i') %>% 
+          rename(lan = LAN_4)
+
+data_5 <- non_plausible_values %>%
+          dplyr::left_join(., dplyr::select(data_example, id_i, LAN_5), by = 'id_i') %>% 
+          rename(lan = LAN_5)
+
+
+data_imputed <- mitools::imputationList(
+                list(data_1, data_2, data_3, data_4, data_5)
+                )
+
+#------------------------------------------------
+# crear objeto BRR con los datos imputados
+#------------------------------------------------
+
+library(survey)
+erce_brr_imp <- survey::svrepdesign(
+                data    = data_imputed,
+                type    = 'Fay', 
+                rho     = .5,
+                weights = ~WS,
+                repweights = "repws[0-9]+",
+                combined.weights = TRUE
+                )
+
+#------------------------------------------------
+# calcular percentiles
+#------------------------------------------------
+
+percentiles_imp <- mitools::MIcombine(with(erce_brr_imp, 
+                   svyquantile(~lan, design=erce_brr_imp, 
+                   quantile=c(.05, .10, .25, .50, .75, .90, .95)
+                   )))
+
+#------------------------------------------------
+# editar table
+#------------------------------------------------
+
+tabla_10 <- summary(percentiles_imp) %>%
+            tibble::rownames_to_column("percentiles") %>%
+            dplyr::rename(e = results, , se = se) %>%
+            dplyr::select(percentiles, e, se)
+
+# -----------------------------------------------
+# desplegar tabla
+# -----------------------------------------------
+
+knitr::kable(tabla_10, digits = 2)
+
+```
+
+# Codigo 1.11: Medias de Lenguaje empleando valores plausibles por país (Estudiantes 6to Grado, ERCE 2019)
+
+
+
+```{r echo=TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# porcentajes con valores plausibles
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# cluster únicos
+#------------------------------------------------
+           
+data_a6 <- data_a6 %>%
+erce::remove_labels() %>%
+mutate(id_s = as.numeric(as.factor(paste0(IDCNTRY, "_", STRATA)))) %>%
+mutate(id_j = as.numeric(as.factor(paste0(IDCNTRY, "_", IDSCHOOL)))) %>%
+mutate(id_i = seq(1:nrow(.)))
+
+#------------------------------------------------
+# base de datos con diseño
+#------------------------------------------------
+
+erce_tsl  <- survey::svydesign(
+             data    = data_a6, 
+             weights = ~WS,
+             strata  = ~id_s,
+             id = ~id_j,
+             nest = TRUE)
+
+# Opción: corección a unidad primaria de muestreo que resulte 
+# única al estrato
+
+library(survey)
+options(survey.lonely.psu="adjust")
+
+# Nota: withPV() solo funciona con Taylor Series Linearization
+
+#------------------------------------------------
+# producir porcentajes con valores plausibles
+#------------------------------------------------
+
+options(scipen = 999)
+options(digits = 5)
+
+tabla_11 <- withPV(
+   mapping = lan ~ LAN_1 + LAN_2 + LAN_3 + LAN_4 + LAN_5,
+   data = erce_tsl,
+   action = quote(
+   svyby( ~lan, 
+    by = ~COUNTRY, 
+    FUN = svymean,
+    design = erce_tsl
+    )
+  )
+)
+
+#------------------------------------------------
+# combinar resultados
+#------------------------------------------------
+
+library(mitools)
+summary(mitools::MIcombine(tabla_11))
+
+#------------------------------------------------
+# editar tabla
+#------------------------------------------------
+
+estimados <- summary(mitools::MIcombine(tabla_11))
+
+tabla_11 <- estimados %>%
+              tibble::rownames_to_column("paises") %>%
+              rename(
+               lan = results, 
+               lan_se = se,
+               ll = 4,
+               ul = 5,
+               miss = 6
+               )
+
+# -----------------------------------------------
+# mostrar tabla
+# -----------------------------------------------
+
+knitr::kable(tabla_11, digits = 2)
+
+
+```
+
