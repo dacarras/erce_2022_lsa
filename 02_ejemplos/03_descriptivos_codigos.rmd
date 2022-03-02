@@ -4,6 +4,7 @@ subtitle: "Descriptivos"
 author: "dacarras"
 date: 'Marzo 2 de 2022'
 output:
+  github_document:
   html_document:
     theme: paper
     highlight: kate
@@ -635,7 +636,7 @@ options(scipen = 999)
 options(digits = 5)
 
 
-tabla_7 <- withPV(
+tabla_7 <- mitools::withPV(
    mapping = lan_min ~ lan_min_1 + lan_min_2 + lan_min_3 + lan_min_4 + lan_min_5,
    data = erce_tsl,
    action = quote(
