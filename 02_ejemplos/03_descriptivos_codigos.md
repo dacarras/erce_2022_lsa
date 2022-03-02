@@ -1,18 +1,7 @@
-LLECE: Taller de Análisis II
+Descriptivos
 ================
-dacarras
+LLECE: Taller de Análisis II
 Marzo 2 de 2022
-
-<style>
-  .main-container {
-    max-width: 1600px !important;
-  }
-  .list-group-item.active, 
-  .list-group-item.active:focus, 
-  .list-group-item.active:hover {
-    background-color: #373334;
-  }
-</style>
 
 # Librerias a instalar
 
