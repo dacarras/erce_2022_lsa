@@ -37,9 +37,10 @@
 ``` r
 devtools::install_github(
   'dacarras/erce',
-  auth_token = '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',
   force = TRUE)
 ```
+
+> Nota: librería en desarollo. Creada para la realización del taller.
 
 ## funciones
 
