@@ -8,7 +8,7 @@
         introduccion](https://www.dropbox.com/s/8cstd0drcj4lnhz/01_introduccion.pdf?dl=1)
         -   introducción a estudios de gran escala
     -   [02
-        desarollo](https://www.dropbox.com/s/h0mwvuqyauflgb7/02_desarollo.pdf?dl=1)
+        desarollo](https://www.dropbox.com/s/7z1p1g9z98gq7av/02_desarrollo.pdf?dl=1)
         -   análisis de datos como desarollo
     -   [03
         descriptivos](https://www.dropbox.com/s/2g4pwxl178605xl/03_descriptivos.pdf?dl=1)
