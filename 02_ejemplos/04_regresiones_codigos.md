@@ -1,57 +1,11 @@
----
-title: 'Regresiones'
-author: "LLECE: Taller de Análisis II"
-date: 'Marzo 2 de 2022'
-output:
-  github_document:
-  html_document:
-    theme: paper
-    highlight: kate
-    toc: true
-    toc_float:
-      collapsed: false
-      smooth_scroll: false
-    fig_width: 10 
-    fig_height: 8 
----
-
-```{r setup, include=FALSE}
-#----------------------------------------------------------
-# setup
-#----------------------------------------------------------
-
-
-# knitr option
-knitr::opts_chunk$set(dev = 'png')
-options(knitr.kable.NA = '', digits = 2)
-options(scipen = 999999)
-
-# remove all previous objects
-rm(list = ls())
-
-# fonts
-Sys.setenv(LANG="en_US.UTF-8")
-
-
-# ------------------------------------------------------
-# get times
-# ------------------------------------------------------
-
-start_time <- Sys.time()
-
-# ------------------------------------------------------
-# cargar librerias principales
-# ------------------------------------------------------
-
-library(dplyr)
-
-
-```
+Regresiones
+================
+LLECE: Taller de Análisis II
+Marzo 2 de 2022
 
 # Librerias a instalar
 
-```{r echo = TRUE, eval = FALSE}
-
+``` r
 # -------------------------------------------------------------------
 # librerias
 # -------------------------------------------------------------------
@@ -86,16 +40,11 @@ install.packages('tidyverse')
 install.packages('mitools')
 install.packages('survey')
 install.packages('srvyr')
-
-
 ```
-
-
 
 # Código 1.1: pesos BRR con pesos estandarizados o pesos SENATE
 
-```{r echo = TRUE, eval = TRUE}
-
+``` r
 # -------------------------------------------------------------------
 # BRR con pesos senate
 # -------------------------------------------------------------------
@@ -206,13 +155,11 @@ mutate(repws097 = BRR97/WT * WS) %>%
 mutate(repws098 = BRR98/WT * WS) %>%
 mutate(repws099 = BRR99/WT * WS) %>%
 mutate(repws100 = BRR100/WT * WS) 
-
 ```
 
 # Codigo 1.2 regresion de puntajes de matemáticas a nivel socioeconómico, empleando datos de la región (Estudiantes 6to grado, ERCE 2019)
 
-```{r echo=TRUE, eval = TRUE}
-
+``` r
 # -------------------------------------------------------------------
 # regresion con valores plausibles y TSL
 # -------------------------------------------------------------------
@@ -266,14 +213,20 @@ tabla_1 <- mitools::withPV(
 
 library(mitools)
 summary(mitools::MIcombine(tabla_1))
-
 ```
 
+    ## Multiple imputation results:
+    ##       withPV.survey.design(mapping = mat ~ MAT_1 + MAT_2 + MAT_3 + 
+    ##     MAT_4 + MAT_5, data = erce_tsl, action = quote(survey::svyglm(mat ~ 
+    ##     1 + ISECF, design = erce_tsl)), rewrite = TRUE)
+    ##       MIcombine.default(tabla_1)
+    ##                 results           se       (lower       upper) missInfo
+    ## (Intercept) 697.5691108 1.0017864349 695.54088295 699.59733857     36 %
+    ## ISECF        36.1518283 0.7905758005  34.59531868  37.70833792     13 %
 
-# Codigo 1.3 regresion con valores plausibles y valores _**p**_.
+# Codigo 1.3 regresion con valores plausibles y valores ***p***.
 
-```{r echo=TRUE, eval = TRUE}
-
+``` r
 # -------------------------------------------------------------------
 # regresion con valores plausibles y TSL
 # -------------------------------------------------------------------
@@ -330,14 +283,16 @@ tabla_2 <- erce::combine_reg(pv_estimates)
 
 tabla_2 %>%
 knitr::kable(., digits = 2)
-  
 ```
 
+| term        |      e |   se | p_val |     lo |     hi |
+|:------------|-------:|-----:|------:|-------:|-------:|
+| (Intercept) | 697.57 | 1.00 |     0 | 695.54 | 699.60 |
+| ISECF       |  36.15 | 0.79 |     0 |  34.60 |  37.71 |
 
 # Codigo 1.4: regresión con BRR empleando `survey`
 
-```{r echo=TRUE, eval = TRUE}
-
+``` r
 # -------------------------------------------------------------------
 # regresion con valores plausibles y TSL
 # -------------------------------------------------------------------
@@ -411,17 +366,16 @@ tabla_3 <- erce::combine_reg(svyglm_estimates)
 #------------------------------------------------
 
 knitr::kable(tabla_3, digits = 2)
-
-
-
 ```
 
+| term        |      e |   se | p_val |     lo |     hi |
+|:------------|-------:|-----:|------:|-------:|-------:|
+| (Intercept) | 697.57 | 0.95 |     0 | 695.62 | 699.52 |
+| ISECF       |  36.15 | 0.82 |     0 |  34.54 |  37.76 |
 
 # Codigo 1.5: regresión con TSL empleando `survey` prediciendo una variable dictómica
 
-
-```{r echo=TRUE, eval = TRUE}
-
+``` r
 # -------------------------------------------------------------------
 # regresión logistica con valores plausibles y TSL
 # -------------------------------------------------------------------
@@ -508,14 +462,16 @@ tabla_4 <- erce::combine_log(logit_estimates)
 #------------------------------------------------
 
 knitr::kable(tabla_4, digits = 2)
-
-
 ```
+
+| term        |     e |   se | p_val |    lo |    hi |   or | or_lo | or_hi |
+|:------------|------:|-----:|------:|------:|------:|-----:|------:|------:|
+| (Intercept) | -1.20 | 0.09 |     0 | -1.38 | -1.02 | 0.30 |  0.25 |  0.36 |
+| EDU         |  1.53 | 0.13 |     0 |  1.27 |  1.79 | 4.61 |  3.55 |  6.00 |
 
 # Codigo 1.6: regresión con BRR empleando `survey` prediciendo una variable dictómica
 
-```{r echo=TRUE, eval = TRUE}
-
+``` r
 # -------------------------------------------------------------------
 # regresión logistica con valores plausibles y BRR
 # -------------------------------------------------------------------
@@ -612,15 +568,16 @@ tabla_6 <- erce::combine_log(svyglm_estimates)
 #------------------------------------------------
 
 knitr::kable(tabla_6, digits = 2)
-
-
 ```
 
+| term        |     e |   se | p_val |    lo |    hi |   or | or_lo | or_hi |
+|:------------|------:|-----:|------:|------:|------:|-----:|------:|------:|
+| (Intercept) | -1.20 | 0.08 |     0 | -1.36 | -1.04 | 0.30 |  0.26 |  0.35 |
+| EDU         |  1.53 | 0.14 |     0 |  1.26 |  1.80 | 4.61 |  3.52 |  6.04 |
 
 # Codigo 1.7: regresión variable observada, y dos predictores con TSL
 
-```{r echo=TRUE, eval = TRUE}
-
+``` r
 # -------------------------------------------------------------------
 # regresión lineal a variable observada con dos predictores
 # -------------------------------------------------------------------
@@ -684,15 +641,18 @@ tabla_7 <- broom::tidy(svy_estimates, conf.int = TRUE)
 #------------------------------------------------
 
 knitr::kable(tabla_7, digits = 2)
-
-
 ```
 
+| term        | estimate | std.error | statistic | p.value | conf.low | conf.high |
+|:------------|---------:|----------:|----------:|--------:|---------:|----------:|
+| (Intercept) |    56.78 |      0.21 |    275.83 |    0.00 |    56.37 |     57.19 |
+| x_m         |    -3.18 |      0.20 |    -16.26 |    0.00 |    -3.57 |     -2.80 |
+| z_w         |     0.46 |      0.22 |      2.13 |    0.03 |     0.04 |      0.89 |
+| z_b         |    -1.74 |      0.56 |     -3.13 |    0.00 |    -2.83 |     -0.64 |
 
 # Codigo 1.8: regresión variable observada, y dos predictores con BRR
 
-```{r echo=TRUE, eval = TRUE}
-
+``` r
 # -------------------------------------------------------------------
 # regresión lineal a variable observada con dos predictores
 # -------------------------------------------------------------------
@@ -758,14 +718,18 @@ tabla_8 <- broom::tidy(svy_estimates, conf.int = TRUE)
 #------------------------------------------------
 
 knitr::kable(tabla_8, digits = 2)
-
 ```
 
+| term        | estimate | std.error | statistic | p.value | conf.low | conf.high |
+|:------------|---------:|----------:|----------:|--------:|---------:|----------:|
+| (Intercept) |    56.78 |      0.22 |    259.54 |    0.00 |    56.35 |     57.21 |
+| x_m         |    -3.18 |      0.19 |    -16.93 |    0.00 |    -3.56 |     -2.81 |
+| z_w         |     0.46 |      0.23 |      1.99 |    0.05 |     0.00 |      0.93 |
+| z_b         |    -1.74 |      0.57 |     -3.03 |    0.00 |    -2.88 |     -0.60 |
 
 # Codigo 1.9: regresión logistica variable observada, y dos predictores con TSL
 
-```{r echo=TRUE, eval = TRUE}
-
+``` r
 # -------------------------------------------------------------------
 # regresión lineal a variable observada con dos predictores
 # -------------------------------------------------------------------
@@ -835,15 +799,18 @@ tabla_9 <- broom::tidy(svy_estimates, conf.int = TRUE) %>%
 #------------------------------------------------
 
 knitr::kable(tabla_9, digits = 2)
-
-
 ```
 
+| term        | estimate | std.error | statistic | p.value | conf.low | conf.high |   or | or_lo | or_hi |
+|:------------|---------:|----------:|----------:|--------:|---------:|----------:|-----:|------:|------:|
+| (Intercept) |    -3.94 |      0.15 |    -27.02 |    0.00 |    -4.23 |     -3.66 | 0.02 |  0.01 |  0.03 |
+| x_m         |     0.53 |      0.10 |      5.53 |    0.00 |     0.34 |      0.72 | 1.70 |  1.41 |  2.06 |
+| z_w         |    -0.68 |      0.15 |     -4.37 |    0.00 |    -0.98 |     -0.37 | 0.51 |  0.37 |  0.69 |
+| z_b         |     0.33 |      0.28 |      1.18 |    0.24 |    -0.22 |      0.87 | 1.39 |  0.80 |  2.39 |
 
 # Codigo 1.10: regresión logistica variable observada, y dos predictores con BRR
 
-```{r echo=TRUE, eval = TRUE}
-
+``` r
 # -------------------------------------------------------------------
 # regresión lineal a variable observada con dos predictores
 # -------------------------------------------------------------------
@@ -915,7 +882,11 @@ tabla_10 <- broom::tidy(svy_estimates, conf.int = TRUE) %>%
 #------------------------------------------------
 
 knitr::kable(tabla_10, digits = 2)
-
-
 ```
 
+| term        | estimate | std.error | statistic | p.value | conf.low | conf.high |   or | or_lo | or_hi |
+|:------------|---------:|----------:|----------:|--------:|---------:|----------:|-----:|------:|------:|
+| (Intercept) |    -3.94 |      0.14 |    -27.51 |    0.00 |    -4.23 |     -3.66 | 0.02 |  0.01 |  0.03 |
+| x_m         |     0.53 |      0.09 |      5.66 |    0.00 |     0.34 |      0.72 | 1.70 |  1.41 |  2.05 |
+| z_w         |    -0.68 |      0.15 |     -4.48 |    0.00 |    -0.98 |     -0.38 | 0.51 |  0.38 |  0.69 |
+| z_b         |     0.33 |      0.30 |      1.10 |    0.27 |    -0.26 |      0.92 | 1.39 |  0.77 |  2.50 |
