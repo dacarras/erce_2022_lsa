@@ -1,9 +1,9 @@
 ---
-title: 'LLECE: Taller de Análisis II'
-subtitle: "Multinivel"
-author: "dacarras"
+title: 'Multinivel'
+author: "LLECE: Taller de Análisis II"
 date: 'Marzo 3 de 2022'
 output:
+  github_document:
   html_document:
     theme: paper
     highlight: kate
@@ -14,18 +14,6 @@ output:
     fig_width: 10 
     fig_height: 8 
 ---
-
-<style>
-  .main-container {
-    max-width: 1600px !important;
-  }
-  .list-group-item.active, 
-  .list-group-item.active:focus, 
-  .list-group-item.active:hover {
-    background-color: #373334;
-  }
-</style>
-
 
 ```{r setup, include=FALSE}
 #----------------------------------------------------------
