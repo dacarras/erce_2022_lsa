@@ -5,7 +5,7 @@
     -   Taller conducido de forma remota los días Marzo 02 y 03 de 2022
 -   Contenidos del taller
     -   [01
-        introduccion](https://www.dropbox.com/s/8cstd0drcj4lnhz/01_introduccion.pdf?dl=1)
+        introduccion](https://www.dropbox.com/s/m8pd9ub8o4ek8sk/01_introduccion.pdf?dl=1)
         -   introducción a estudios de gran escala
     -   [02
         desarollo](https://www.dropbox.com/s/7z1p1g9z98gq7av/02_desarrollo.pdf?dl=1)
