@@ -3,10 +3,9 @@ FILE = "mlm.dat";
 TYPE = IMPUTATION;
  
 VARIABLE:
-NAMES = id_s id_j wi wj z_w z_b v_b y; 
+NAMES = id_j wi wj z_w z_b v_b y; 
  MISSING=.;
  
-STRATIFICATION = id_s;
 CLUSTER  = id_j;
 WEIGHT   = wi;
 BWEIGHT  = wj;
@@ -26,7 +25,7 @@ BETWEEN = v_b z_b;
 
 ANALYSIS:
 
-TYPE = COMPLEX TWOLEVEL;
+TYPE = TWOLEVEL;
 ESTIMATOR = MLR;
 PROCESSORS = 4;
 
