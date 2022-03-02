@@ -65,7 +65,6 @@ install.packages('remotes')
 
 devtools::install_github(
   'dacarras/erce',
-  auth_token = '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',
   force = TRUE)
 
 #------------------------------------------------
@@ -100,6 +99,7 @@ remotes::install_github("ajdamico/lodown")
 # BRR/WT factor del BRR sobre los observados
 #------------------------------------------------
 
+library(dplyr)
 data_a6 <- erce::erce_2019_qa6 %>%
 mutate(repws001 = BRR1/WT * WS) %>%
 mutate(repws002 = BRR2/WT * WS) %>%

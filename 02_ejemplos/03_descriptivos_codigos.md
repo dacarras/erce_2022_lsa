@@ -25,7 +25,6 @@ install.packages('remotes')
 
 devtools::install_github(
   'dacarras/erce',
-  auth_token = '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',
   force = TRUE)
 
 #------------------------------------------------
@@ -55,6 +54,21 @@ remotes::install_github("ajdamico/lodown")
 # BRR/WT factor del BRR sobre los observados
 #------------------------------------------------
 
+library(dplyr)
+```
+
+    ## 
+    ## Attaching package: 'dplyr'
+
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     filter, lag
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     intersect, setdiff, setequal, union
+
+``` r
 data_a6 <- erce::erce_2019_qa6 %>%
 mutate(repws001 = BRR1/WT * WS) %>%
 mutate(repws002 = BRR2/WT * WS) %>%
@@ -173,13 +187,13 @@ dplyr::count(data_a6, E6IT16, REPC)
 ```
 
     ## # A tibble: 5 × 3
-    ##                     E6IT16                 REPC     n
-    ##                  <dbl+lbl>            <dbl+lbl> <int>
-    ## 1  1 [Nunca he repetido.]   0 [Nunca]           63958
-    ## 2  2 [Una vez.]             1 [Una o más veces]  9403
-    ## 3  3 [Dos veces o más.]     1 [Una o más veces]  2504
-    ## 4  4 [No sé, no recuerdo.] NA                    1001
-    ## 5 NA                       NA                    3961
+    ##       E6IT16       REPC     n
+    ##   <hvn_lbll> <hvn_lbll> <int>
+    ## 1          1          0 63958
+    ## 2          2          1  9403
+    ## 3          3          1  2504
+    ## 4          4         NA  1001
+    ## 5         NA         NA  3961
 
 ``` r
 #------------------------------------------------
@@ -187,6 +201,16 @@ dplyr::count(data_a6, E6IT16, REPC)
 #------------------------------------------------
 
 library(srvyr)
+```
+
+    ## 
+    ## Attaching package: 'srvyr'
+
+    ## The following object is masked from 'package:stats':
+    ## 
+    ##     filter
+
+``` r
 data_brr <- data_a6 %>%
             erce::remove_labels() %>%
             as_survey_rep(
@@ -202,6 +226,22 @@ data_brr <- data_a6 %>%
 # única al estrato
 
 library(survey)
+```
+
+    ## Loading required package: grid
+
+    ## Loading required package: Matrix
+
+    ## Loading required package: survival
+
+    ## 
+    ## Attaching package: 'survey'
+
+    ## The following object is masked from 'package:graphics':
+    ## 
+    ##     dotchart
+
+``` r
 options(survey.lonely.psu="adjust")
 
 #------------------------------------------------

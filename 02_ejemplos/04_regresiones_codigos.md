@@ -29,7 +29,6 @@ credentials::set_github_pat()
 # la presente libreria se encuentra en desarollado y no es de acceso libre
 devtools::install_github(
   'dacarras/erce',
-  auth_token = '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',
   force = TRUE)
 
 #------------------------------------------------
@@ -189,6 +188,22 @@ erce_tsl  <- survey::svydesign(
 # única al estrato
 
 library(survey)
+```
+
+    ## Loading required package: grid
+
+    ## Loading required package: Matrix
+
+    ## Loading required package: survival
+
+    ## 
+    ## Attaching package: 'survey'
+
+    ## The following object is masked from 'package:graphics':
+    ## 
+    ##     dotchart
+
+``` r
 options(survey.lonely.psu="adjust")
 
 # Nota: withPV() solo funciona con Taylor Series Linearization

@@ -29,7 +29,6 @@ credentials::set_github_pat()
 # la presente libreria se encuentra en desarollado y no es de acceso libre
 devtools::install_github(
   'dacarras/erce',
-  auth_token = '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',
   force = TRUE)
 
 #------------------------------------------------
@@ -158,8 +157,8 @@ summarize(
 knitr::kable()
 ```
 
-    ## `summarise()` has grouped output by 'id_k'. You can override using the `.groups`
-    ## argument.
+    ## `summarise()` has grouped output by 'id_k'. You can override using the
+    ## `.groups` argument.
 
 | id_k | ctry_name            | sum_of_raw_weights | sum_of_senate_weights | sum_of_normalized_weights | sum_of_effective_sample_weights | number_of_observations |
 |-----:|:---------------------|-------------------:|----------------------:|--------------------------:|--------------------------------:|-----------------------:|
@@ -630,7 +629,11 @@ svylme_pv_results <- mitools::withPV(
 #------------------------------------------------
 
 tabla_1_5 <- erce::combine_reg(svylme_pv_results)
+```
 
+    ## Loading required package: mitools
+
+``` r
 #------------------------------------------------
 # mostrar tabla
 #------------------------------------------------
@@ -869,7 +872,9 @@ RStata::stata(stata_code)
     ## 
     ## command(s) run for each plausible value:
     ## 
-    ##      mixed @pv               z_w                     z_b                     v_b                     i.id_s                  [pw=wb1] || id_j:, ml pweight(wb2)
+    ##      mixed @pv               z_w                     z_b                     v_
+    ## > b                     i.id_s                  [pw=wb1] || id_j:, ml pweight(w
+    ## > b2)
     ## 
     ## Estimates for MAT_1   complete
     ## Estimates for MAT_2   complete
@@ -2357,7 +2362,8 @@ RStata::stata(stata_code)
     ## 
     ## command(s) run for each plausible value:
     ## 
-    ##      mixed @pv               z_w                     z_b                     v_b                     [pw=wb1] || id_j:, ml pweight(wb2)
+    ##      mixed @pv               z_w                     z_b                     v_
+    ## > b                     [pw=wb1] || id_j:, ml pweight(wb2)
     ## 
     ## Estimates for MAT_1   complete
     ## Estimates for MAT_2   complete
