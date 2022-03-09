@@ -1,0 +1,996 @@
+Mplus VERSION 8.6 (Mac)
+MUTHEN & MUTHEN
+03/03/2022   4:23 PM
+
+INPUT INSTRUCTIONS
+
+  DATA:
+  FILE = "mlm.dat";
+  TYPE = IMPUTATION;
+
+  VARIABLE:
+  NAMES = id_j wi wj z_w z_b v_b y;
+   MISSING=.;
+
+  CLUSTER  = id_j;
+  WEIGHT   = wi;
+  BWEIGHT  = wj;
+  WTSCALE  = ECLUSTER;
+  BWTSCALE = SAMPLE;
+
+  USEVARIABLES =
+  y
+  z_w
+  v_b
+  z_b
+  ;
+
+  WITHIN  = z_w;
+  BETWEEN = v_b z_b;
+
+
+  ANALYSIS:
+
+  TYPE = TWOLEVEL;
+  ESTIMATOR = MLR;
+  PROCESSORS = 4;
+
+  MODEL:
+
+  %WITHIN%
+
+  y on z_w;
+
+  %BETWEEN%
+
+  y on v_b;
+  y on z_b;
+
+
+  OUTPUT:
+
+  STANDARDIZED
+  CINTERVAL
+  RESIDUAL
+  ;
+
+
+
+
+INPUT READING TERMINATED NORMALLY
+
+
+
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Average number of observations                                4481
+
+Number of replications
+    Requested                                                    5
+    Completed                                                    5
+
+Number of dependent variables                                    1
+Number of independent variables                                  3
+Number of continuous latent variables                            0
+
+Observed dependent variables
+
+  Continuous
+   Y
+
+Observed independent variables
+   Z_W         V_B         Z_B
+
+Variables with special functions
+
+  Cluster variable      ID_J
+  Weight variable (effective cluster-size scaling)
+    WI
+  Between weight variable (sample-size scaling)
+    WJ
+
+  Within variables
+   Z_W
+
+  Between variables
+   V_B         Z_B
+
+
+Estimator                                                      MLR
+Information matrix                                        OBSERVED
+Maximum number of iterations                                   100
+Convergence criterion                                    0.100D-05
+Maximum number of EM iterations                                500
+Convergence criteria for the EM algorithm
+  Loglikelihood change                                   0.100D-02
+  Relative loglikelihood change                          0.100D-05
+  Derivative                                             0.100D-03
+Minimum variance                                         0.100D-03
+Maximum number of steepest descent iterations                   20
+Maximum number of iterations for H1                           2000
+Convergence criterion for H1                             0.100D-03
+Optimization algorithm                                         EMA
+
+Input data file(s)
+  Multiple data files from
+    mlm.dat
+Input data format  FREE
+
+
+SUMMARY OF DATA FOR THE FIRST DATA SET
+
+     Number of missing data patterns             1
+     Number of clusters                        244
+
+     Average cluster size       18.365
+
+     Estimated Intraclass Correlations for the Y Variables
+
+                Intraclass
+     Variable  Correlation
+
+     Y            0.403
+
+
+
+SUMMARY OF MISSING DATA PATTERNS FOR THE FIRST DATA SET
+
+
+     MISSING DATA PATTERNS (x = not missing)
+
+           1
+ Y         x
+ Z_W       x
+ V_B       x
+ Z_B       x
+
+
+     MISSING DATA PATTERN FREQUENCIES
+
+    Pattern   Frequency
+          1        4481
+
+
+COVARIANCE COVERAGE OF DATA FOR THE FIRST DATA SET
+
+Minimum covariance coverage value   0.100
+
+
+     PROPORTION OF DATA PRESENT
+
+
+           Covariance Coverage
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+ Y              1.000
+ Z_W            1.000         1.000
+ V_B            1.000         1.000         1.000
+ Z_B            1.000         1.000         1.000         1.000
+
+
+SAMPLE STATISTICS
+
+NOTE:  The sample statistics for within and between refer to the
+       maximum-likelihood estimated within and between covariance
+       matrices, respectively.
+
+NOTE:  These are average results over 5 data sets.
+
+
+     ESTIMATED SAMPLE STATISTICS FOR WITHIN
+
+
+           Means
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+                0.000         0.000         0.000         0.000
+
+
+           Covariances
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+ Y           4560.467
+ Z_W            5.478         0.438
+ V_B            0.000         0.000         0.000
+ Z_B            0.000         0.000         0.000         0.000
+
+
+           Correlations
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+ Y              1.000
+ Z_W            0.123         1.000
+ V_B            0.000         0.000         0.000
+ Z_B            0.000         0.000         0.000         0.000
+
+
+     ESTIMATED SAMPLE STATISTICS FOR BETWEEN
+
+
+           Means
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+              638.148         0.000        -0.200        -0.442
+
+
+           Covariances
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+ Y           3009.324
+ Z_W            0.000         0.000
+ V_B            4.908         0.000         0.097
+ Z_B           15.094         0.000         0.097         0.459
+
+
+           Correlations
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+ Y              1.000
+ Z_W            0.000         0.000
+ V_B            0.287         0.000         1.000
+ Z_B            0.406         0.000         0.459         1.000
+
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                        6
+
+Loglikelihood
+
+    H0 Value
+
+        Mean                            -25550.997
+        Std Dev                             38.376
+        Number of successful computations        5
+
+             Proportions                   Percentiles
+        Expected    Observed         Expected       Observed
+           0.990       1.000       -25640.270     -25607.983
+           0.980       1.000       -25629.809     -25607.983
+           0.950       1.000       -25614.121     -25607.983
+           0.900       0.800       -25600.179     -25607.983
+           0.800       0.600       -25583.294     -25607.983
+           0.700       0.600       -25571.121     -25607.983
+           0.500       0.600       -25550.997     -25585.126
+           0.300       0.400       -25530.873     -25531.657
+           0.200       0.400       -25518.700     -25515.890
+           0.100       0.000       -25501.815     -25515.890
+           0.050       0.000       -25487.873     -25515.890
+           0.020       0.000       -25472.185     -25515.890
+           0.010       0.000       -25461.724     -25515.890
+
+    H1 Value
+
+        Mean                            -25550.996
+        Std Dev                             38.375
+        Number of successful computations        5
+
+             Proportions                   Percentiles
+        Expected    Observed         Expected       Observed
+           0.990       1.000       -25640.268     -25607.982
+           0.980       1.000       -25629.807     -25607.982
+           0.950       1.000       -25614.120     -25607.982
+           0.900       0.800       -25600.178     -25607.982
+           0.800       0.600       -25583.293     -25607.982
+           0.700       0.600       -25571.120     -25607.982
+           0.500       0.600       -25550.996     -25585.125
+           0.300       0.400       -25530.872     -25531.657
+           0.200       0.400       -25518.699     -25515.890
+           0.100       0.000       -25501.814     -25515.890
+           0.050       0.000       -25487.872     -25515.890
+           0.020       0.000       -25472.184     -25515.890
+           0.010       0.000       -25461.723     -25515.890
+
+Information Criteria
+
+    Akaike (AIC)
+
+        Mean                             51113.994
+        Std Dev                             76.751
+        Number of successful computations        5
+
+             Proportions                   Percentiles
+        Expected    Observed         Expected       Observed
+           0.990       1.000        50935.448      51040.655
+           0.980       1.000        50956.370      51040.655
+           0.950       1.000        50987.746      51040.655
+           0.900       1.000        51015.629      51040.655
+           0.800       0.600        51049.400      51040.655
+           0.700       0.600        51073.745      51040.655
+           0.500       0.400        51113.994      51043.780
+           0.300       0.400        51154.242      51075.314
+           0.200       0.400        51178.587      51182.253
+           0.100       0.200        51212.358      51182.253
+           0.050       0.000        51240.241      51182.253
+           0.020       0.000        51271.617      51182.253
+           0.010       0.000        51292.540      51182.253
+
+    Bayesian (BIC)
+
+        Mean                             51152.439
+        Std Dev                             76.751
+        Number of successful computations        5
+
+             Proportions                   Percentiles
+        Expected    Observed         Expected       Observed
+           0.990       1.000        50973.893      51079.101
+           0.980       1.000        50994.816      51079.101
+           0.950       1.000        51026.191      51079.101
+           0.900       1.000        51054.075      51079.101
+           0.800       0.600        51087.846      51079.101
+           0.700       0.600        51112.191      51079.101
+           0.500       0.400        51152.439      51082.226
+           0.300       0.400        51192.688      51113.759
+           0.200       0.400        51217.033      51220.699
+           0.100       0.200        51250.803      51220.699
+           0.050       0.000        51278.687      51220.699
+           0.020       0.000        51310.063      51220.699
+           0.010       0.000        51330.985      51220.699
+
+    Sample-Size Adjusted BIC (n* = (n + 2) / 24)
+
+        Mean                             51133.374
+        Std Dev                             76.751
+        Number of successful computations        5
+
+             Proportions                   Percentiles
+        Expected    Observed         Expected       Observed
+           0.990       1.000        50954.828      51060.035
+           0.980       1.000        50975.750      51060.035
+           0.950       1.000        51007.126      51060.035
+           0.900       1.000        51035.009      51060.035
+           0.800       0.600        51068.780      51060.035
+           0.700       0.600        51093.125      51060.035
+           0.500       0.400        51133.374      51063.160
+           0.300       0.400        51173.622      51094.694
+           0.200       0.400        51197.967      51201.633
+           0.100       0.200        51231.738      51201.633
+           0.050       0.000        51259.621      51201.633
+           0.020       0.000        51290.997      51201.633
+           0.010       0.000        51311.920      51201.633
+
+Chi-Square Test of Model Fit
+
+        Degrees of freedom                       0
+
+        Mean                                 0.002
+        Std Dev                              0.001
+        Number of successful computations        5
+
+             Proportions                   Percentiles
+        Expected    Observed         Expected       Observed
+           0.990       1.000            0.000          0.000
+           0.980       1.000            0.000          0.000
+           0.950       1.000            0.000          0.000
+           0.900       1.000            0.000          0.000
+           0.800       1.000            0.000          0.000
+           0.700       1.000            0.000          0.000
+           0.500       1.000            0.000          0.000
+           0.300       1.000            0.000          0.002
+           0.200       1.000            0.000          0.003
+           0.100       1.000            0.000          0.003
+           0.050       1.000            0.000          0.003
+           0.020       1.000            0.000          0.003
+           0.010       1.000            0.000          0.003
+
+RMSEA (Root Mean Square Error Of Approximation)
+
+        Mean                                 0.000
+        Std Dev                              0.000
+        Number of successful computations        5
+
+        Cumulative Distribution Function
+           Value    Function Value
+           0.990       1.000
+           0.980       1.000
+           0.950       1.000
+           0.900       1.000
+           0.800       1.000
+           0.700       1.000
+           0.500       1.000
+           0.300       1.000
+           0.200       1.000
+           0.100       1.000
+           0.050       1.000
+           0.020       1.000
+           0.010       1.000
+
+CFI/TLI
+
+    CFI
+
+        Mean                                 1.000
+        Std Dev                              0.000
+        Number of successful computations        5
+
+        Cumulative Distribution Function
+           Value    Function Value
+           0.990       0.000
+           0.980       0.000
+           0.950       0.000
+           0.900       0.000
+           0.800       0.000
+           0.700       0.000
+           0.500       0.000
+           0.300       0.000
+           0.200       0.000
+           0.100       0.000
+           0.050       0.000
+           0.020       0.000
+           0.010       0.000
+
+    TLI
+
+        Mean                                 1.000
+        Std Dev                              0.000
+        Number of successful computations        5
+
+        Cumulative Distribution Function
+           Value    Function Value
+           0.990       0.000
+           0.980       0.000
+           0.950       0.000
+           0.900       0.000
+           0.800       0.000
+           0.700       0.000
+           0.500       0.000
+           0.300       0.000
+           0.200       0.000
+           0.100       0.000
+           0.050       0.000
+           0.020       0.000
+           0.010       0.000
+
+SRMR (Standardized Root Mean Square Residual) for the WITHIN level
+
+        Mean                                 0.000
+        Std Dev                              0.000
+        Number of successful computations        5
+
+        Cumulative Distribution Function
+           Value    Function Value
+           0.990       1.000
+           0.980       1.000
+           0.950       1.000
+           0.900       1.000
+           0.800       1.000
+           0.700       1.000
+           0.500       1.000
+           0.300       1.000
+           0.200       1.000
+           0.100       1.000
+           0.050       1.000
+           0.020       1.000
+           0.010       1.000
+
+SRMR (Standardized Root Mean Square Residual) for the BETWEEN level
+
+        Mean                                 0.002
+        Std Dev                              0.001
+        Number of successful computations        5
+
+        Cumulative Distribution Function
+           Value    Function Value
+           0.990       1.000
+           0.980       1.000
+           0.950       1.000
+           0.900       1.000
+           0.800       1.000
+           0.700       1.000
+           0.500       1.000
+           0.300       1.000
+           0.200       1.000
+           0.100       1.000
+           0.050       1.000
+           0.020       1.000
+           0.010       1.000
+
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed   Rate of
+                    Estimate       S.E.  Est./S.E.    P-Value    Missing
+
+Within Level
+
+ Y          ON
+    Z_W               12.513      2.258      5.543      0.000      0.272
+
+ Residual Variances
+    Y               4490.404    168.405     26.664      0.000      0.345
+
+Between Level
+
+ Y          ON
+    V_B               22.506     10.518      2.140      0.032      0.050
+    Z_B               28.096      7.039      3.991      0.000      0.114
+
+ Intercepts
+    Y                655.065      4.775    137.187      0.000      0.140
+
+ Residual Variances
+    Y               2480.015    471.794      5.257      0.000      0.095
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Average Condition Number for the Information Matrix      0.318E-04
+       (ratio of smallest to largest eigenvalue)
+
+
+STANDARDIZED MODEL RESULTS
+
+
+STDYX Standardization
+
+                                                    Two-Tailed   Rate of
+                    Estimate       S.E.  Est./S.E.    P-Value    Missing
+
+Within Level
+
+ Y          ON
+    Z_W                0.123      0.022      5.461      0.000      0.313
+
+ Residual Variances
+    Y                  0.985      0.005    179.187      0.000      0.300
+
+Between Level
+
+ Y          ON
+    V_B                0.128      0.060      2.127      0.033      0.049
+    Z_B                0.347      0.091      3.812      0.000      0.139
+
+ Intercepts
+    Y                 11.931      0.846     14.109      0.000      0.041
+
+ Residual Variances
+    Y                  0.822      0.070     11.721      0.000      0.140
+
+
+STDY Standardization
+
+                                                    Two-Tailed   Rate of
+                    Estimate       S.E.  Est./S.E.    P-Value    Missing
+
+Within Level
+
+ Y          ON
+    Z_W                0.185      0.034      5.469      0.000      0.314
+
+ Residual Variances
+    Y                  0.985      0.005    179.187      0.000      0.300
+
+Between Level
+
+ Y          ON
+    V_B                0.410      0.192      2.132      0.033      0.049
+    Z_B                0.512      0.133      3.837      0.000      0.141
+
+ Intercepts
+    Y                 11.931      0.846     14.109      0.000      0.041
+
+ Residual Variances
+    Y                  0.822      0.070     11.721      0.000      0.140
+
+
+STD Standardization
+
+                                                    Two-Tailed   Rate of
+                    Estimate       S.E.  Est./S.E.    P-Value    Missing
+
+Within Level
+
+ Y          ON
+    Z_W               12.513      2.258      5.543      0.000      0.272
+
+ Residual Variances
+    Y               4490.404    168.405     26.664      0.000      0.345
+
+Between Level
+
+ Y          ON
+    V_B               22.506     10.518      2.140      0.032      0.050
+    Z_B               28.096      7.039      3.991      0.000      0.114
+
+ Intercepts
+    Y                655.065      4.775    137.187      0.000      0.140
+
+ Residual Variances
+    Y               2480.015    471.794      5.257      0.000      0.095
+
+
+R-SQUARE
+
+Within Level
+
+    Observed                                        Two-Tailed   Rate of
+    Variable        Estimate       S.E.  Est./S.E.    P-Value    Missing
+
+    Y                  0.015      0.005      2.756      0.006      0.300
+
+Between Level
+
+    Observed                                        Two-Tailed   Rate of
+    Variable        Estimate       S.E.  Est./S.E.    P-Value    Missing
+
+    Y                  0.178      0.070      2.540      0.011      0.140
+
+
+CONFIDENCE INTERVALS OF MODEL RESULTS
+
+                  Lower .5%  Lower 2.5%    Lower 5%    Estimate    Upper 5%  Upper 2.5%   Upper .5%
+
+Within Level
+
+ Y        ON
+    Z_W              6.698       8.088       8.799      12.513      16.227      16.938      18.328
+
+ Residual Variances
+    Y             4056.628    4160.331    4213.379    4490.404    4767.430    4820.478    4924.181
+
+Between Level
+
+ Y        ON
+    V_B             -4.587       1.890       5.203      22.506      39.808      43.121      49.598
+    Z_B              9.963      14.298      16.516      28.096      39.676      41.893      46.228
+
+ Intercepts
+    Y              642.766     645.706     647.210     655.065     662.920     664.424     667.365
+
+ Residual Variances
+    Y             1264.766    1555.297    1703.913    2480.015    3256.117    3404.732    3695.263
+
+
+CONFIDENCE INTERVALS OF STANDARDIZED MODEL RESULTS
+
+
+STDYX Standardization
+
+                  Lower .5%  Lower 2.5%    Lower 5%    Estimate    Upper 5%  Upper 2.5%   Upper .5%
+
+Within Level
+
+ Y        ON
+    Z_W              0.065       0.079       0.086       0.123       0.160       0.167       0.181
+
+ Residual Variances
+    Y                0.971       0.974       0.976       0.985       0.994       0.996       0.999
+
+Between Level
+
+ Y        ON
+    V_B             -0.027       0.010       0.029       0.128       0.226       0.245       0.282
+    Z_B              0.113       0.169       0.197       0.347       0.497       0.525       0.581
+
+ Intercepts
+    Y                9.753      10.273      10.540      11.931      13.322      13.588      14.109
+
+ Residual Variances
+    Y                0.641       0.684       0.707       0.822       0.937       0.959       1.002
+
+
+STDY Standardization
+
+                  Lower .5%  Lower 2.5%    Lower 5%    Estimate    Upper 5%  Upper 2.5%   Upper .5%
+
+Within Level
+
+ Y        ON
+    Z_W              0.098       0.119       0.130       0.185       0.241       0.252       0.273
+
+ Residual Variances
+    Y                0.971       0.974       0.976       0.985       0.994       0.996       0.999
+
+Between Level
+
+ Y        ON
+    V_B             -0.085       0.033       0.094       0.410       0.726       0.787       0.905
+    Z_B              0.168       0.250       0.292       0.512       0.732       0.774       0.856
+
+ Intercepts
+    Y                9.753      10.273      10.540      11.931      13.322      13.588      14.109
+
+ Residual Variances
+    Y                0.641       0.684       0.707       0.822       0.937       0.959       1.002
+
+
+STD Standardization
+
+                  Lower .5%  Lower 2.5%    Lower 5%    Estimate    Upper 5%  Upper 2.5%   Upper .5%
+
+Within Level
+
+ Y        ON
+    Z_W              6.698       8.088       8.799      12.513      16.227      16.938      18.328
+
+ Residual Variances
+    Y             4056.628    4160.331    4213.379    4490.404    4767.430    4820.478    4924.181
+
+Between Level
+
+ Y        ON
+    V_B             -4.587       1.890       5.203      22.506      39.808      43.121      49.598
+    Z_B              9.963      14.298      16.516      28.096      39.676      41.893      46.228
+
+ Intercepts
+    Y              642.766     645.706     647.210     655.065     662.920     664.424     667.365
+
+ Residual Variances
+    Y             1264.766    1555.297    1703.913    2480.015    3256.117    3404.732    3695.263
+
+
+RESIDUAL OUTPUT
+
+NOTE:  These are average results over 5 data sets.
+
+
+     ESTIMATED MODEL AND RESIDUALS (OBSERVED - ESTIMATED) FOR WITHIN
+
+
+           Model Estimated Means
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+                0.000         0.000         0.000         0.000
+
+
+           Residuals for Means
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+                0.000         0.000         0.000         0.000
+
+
+           Model Estimated Covariances
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+ Y           2280.161
+ Z_W            2.800         0.719
+ V_B            0.000         0.000         0.000
+ Z_B            0.000         0.000         0.000         0.000
+
+
+           Residuals for Covariances
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+ Y              0.572
+ Z_W            0.000         0.000
+ V_B            0.000         0.000         0.000
+ Z_B            0.000         0.000         0.000         0.000
+
+
+     ESTIMATED MODEL AND RESIDUALS (OBSERVED - ESTIMATED) FOR BETWEEN
+
+
+           Model Estimated Means
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+              638.148         0.000        -0.200        -0.442
+
+
+           Residuals for Means
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+               -0.001         0.000         0.000         0.000
+
+
+           Model Estimated Covariances
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+ Y           1508.452
+ Z_W            0.000         0.000
+ V_B            2.598         0.000         0.549
+ Z_B            7.746         0.000         0.278         0.730
+
+
+           Residuals for Covariances
+              Y             Z_W           V_B           Z_B
+              ________      ________      ________      ________
+ Y             -3.290
+ Z_W            0.000         0.000
+ V_B            0.000         0.000         0.000
+ Z_B            0.004         0.000         0.000         0.000
+
+
+TECHNICAL 1 OUTPUT
+
+
+     PARAMETER SPECIFICATION FOR WITHIN
+
+
+           NU
+              Y             Z_W
+              ________      ________
+                    0             0
+
+
+           LAMBDA
+              Y             Z_W
+              ________      ________
+ Y                  0             0
+ Z_W                0             0
+
+
+           THETA
+              Y             Z_W
+              ________      ________
+ Y                  0
+ Z_W                0             0
+
+
+           ALPHA
+              Y             Z_W
+              ________      ________
+                    0             0
+
+
+           BETA
+              Y             Z_W
+              ________      ________
+ Y                  0             1
+ Z_W                0             0
+
+
+           PSI
+              Y             Z_W
+              ________      ________
+ Y                  2
+ Z_W                0             0
+
+
+     PARAMETER SPECIFICATION FOR BETWEEN
+
+
+           NU
+              Y             V_B           Z_B
+              ________      ________      ________
+                    0             0             0
+
+
+           LAMBDA
+              Y             V_B           Z_B
+              ________      ________      ________
+ Y                  0             0             0
+ V_B                0             0             0
+ Z_B                0             0             0
+
+
+           THETA
+              Y             V_B           Z_B
+              ________      ________      ________
+ Y                  0
+ V_B                0             0
+ Z_B                0             0             0
+
+
+           ALPHA
+              Y             V_B           Z_B
+              ________      ________      ________
+                    3             0             0
+
+
+           BETA
+              Y             V_B           Z_B
+              ________      ________      ________
+ Y                  0             4             5
+ V_B                0             0             0
+ Z_B                0             0             0
+
+
+           PSI
+              Y             V_B           Z_B
+              ________      ________      ________
+ Y                  6
+ V_B                0             0
+ Z_B                0             0             0
+
+
+     STARTING VALUES FOR WITHIN
+
+
+           NU
+              Y             Z_W
+              ________      ________
+                0.000         0.000
+
+
+           LAMBDA
+              Y             Z_W
+              ________      ________
+ Y              1.000         0.000
+ Z_W            0.000         1.000
+
+
+           THETA
+              Y             Z_W
+              ________      ________
+ Y              0.000
+ Z_W            0.000         0.000
+
+
+           ALPHA
+              Y             Z_W
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              Y             Z_W
+              ________      ________
+ Y              0.000         0.000
+ Z_W            0.000         0.000
+
+
+           PSI
+              Y             Z_W
+              ________      ________
+ Y           3671.609
+ Z_W            0.000         0.235
+
+
+     STARTING VALUES FOR BETWEEN
+
+
+           NU
+              Y             V_B           Z_B
+              ________      ________      ________
+                0.000         0.000         0.000
+
+
+           LAMBDA
+              Y             V_B           Z_B
+              ________      ________      ________
+ Y              1.000         0.000         0.000
+ V_B            0.000         1.000         0.000
+ Z_B            0.000         0.000         1.000
+
+
+           THETA
+              Y             V_B           Z_B
+              ________      ________      ________
+ Y              0.000
+ V_B            0.000         0.000
+ Z_B            0.000         0.000         0.000
+
+
+           ALPHA
+              Y             V_B           Z_B
+              ________      ________      ________
+              652.373         0.000         0.000
+
+
+           BETA
+              Y             V_B           Z_B
+              ________      ________      ________
+ Y              0.000         0.000         0.000
+ V_B            0.000         0.000         0.000
+ Z_B            0.000         0.000         0.000
+
+
+           PSI
+              Y             V_B           Z_B
+              ________      ________      ________
+ Y           3671.609
+ V_B            0.000         0.106
+ Z_B            0.000         0.000         0.169
+
+
+     Beginning Time:  16:23:39
+        Ending Time:  16:23:39
+       Elapsed Time:  00:00:00
+
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2021 Muthen & Muthen

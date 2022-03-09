@@ -261,6 +261,7 @@ summarize(
 
 knitr::kable(tabla_1, digits = 2)
 
+
 ```
 
 

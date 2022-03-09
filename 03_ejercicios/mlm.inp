@@ -1,0 +1,50 @@
+DATA:
+FILE = "mlm.dat";
+TYPE = IMPUTATION;
+ 
+VARIABLE:
+NAMES = id_j wi wj z_w z_b v_b y; 
+ MISSING=.;
+ 
+CLUSTER  = id_j;
+WEIGHT   = wi;
+BWEIGHT  = wj;
+WTSCALE  = ECLUSTER;
+BWTSCALE = SAMPLE;
+
+USEVARIABLES =
+y
+z_w
+v_b
+z_b
+;
+
+WITHIN  = z_w;
+BETWEEN = v_b z_b;
+
+
+ANALYSIS:
+
+TYPE = TWOLEVEL;
+ESTIMATOR = MLR;
+PROCESSORS = 4;
+
+MODEL:
+
+%WITHIN%
+
+y on z_w;
+
+%BETWEEN%
+
+y on v_b;
+y on z_b;
+
+
+OUTPUT:
+
+STANDARDIZED
+CINTERVAL
+RESIDUAL
+;
+

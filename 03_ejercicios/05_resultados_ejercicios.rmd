@@ -1,0 +1,809 @@
+---
+title: 'Código: generación de resultados para la región'
+subtitle: "Figura 5"
+author: "dacarras"
+date: '`r format(Sys.time(), "%a %b %d, %Y")`'
+output:
+  github_document:
+  html_document:
+    theme: paper
+    highlight: kate
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    fig_width: 10 
+    fig_height: 8 
+---
+
+
+```{r setup, include=FALSE}
+#----------------------------------------------------------
+# setup
+#----------------------------------------------------------
+
+
+# knitr option
+knitr::opts_chunk$set(dev = 'png')
+options(knitr.kable.NA = '', digits = 2)
+options(scipen = 999999)
+
+# remove all previous objects
+rm(list = ls())
+
+# fonts
+Sys.setenv(LANG="en_US.UTF-8")
+
+
+# ------------------------------------------------------
+# get times
+# ------------------------------------------------------
+
+start_time <- Sys.time()
+
+
+```
+
+# Introducción
+
+- En el informe de Habilidades Socioemocionales (UNESCO-OREALC, 2021) se reportan porcentajes de respuesta regionales.
+
+- Al igual que en el caso del problema 3 revisado en el taller, para producir resultados a la región se requiere adaptar las variables de diseño. Adicionalmente, el cálculo de porcentajes de respuesta de una variable categórica no posee un solución sencilla al interior de librerías que manejen muestras complejas.
+
+- En el presente desarollo, empleamos la librería **srvyr**, la cual posee un atajo para realizar cálculos de porcentaje de respuestas a variables categóricas incluyendo al diseño muestral.
+
+# Cifra de Ejemplo
+
+- Para ilustrar el presente problema, empleamos la Figura 5, presente en informe de Habilidades Socioemocionales (UNESCO-OREALC, 2021, p 26).
+
+```{r echo = FALSE, out.width = '100%', fig.retina = 1}
+knitr::include_graphics('./files/hse_figura_5.jpg')
+```
+
+## Abrir datos
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# figura 5
+# -------------------------------------------------------------------
+
+library(dplyr)
+
+#------------------------------------------------
+# abrir datos
+#------------------------------------------------
+
+
+erce_qa6 <- erce::erce_2019_qa6 %>%
+            erce::remove_labels()
+
+erce_hse <- erce::erce_2019_hse %>%
+            erce::remove_labels()
+
+
+```
+
+
+## Inspeccionar datos
+
+```{r echo = TRUE, eval = TRUE}
+
+
+# -------------------------------------------------------------------
+# figura 5
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# inspecccionar datos hse
+#------------------------------------------------
+
+names(erce_hse)
+
+
+```
+
+## Seleccionar datos
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# figura 5
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# seleccionar datos
+#------------------------------------------------
+
+erce_hse_selected <- erce_hse %>%
+                     dplyr::select(
+                     # clustering
+                     IDCNTRY, IDSCHOOL, IDCLASS, IDSTUD,
+                     # items
+                     MS3MR1:VD3AO6
+                     )
+
+```
+
+
+## Unir datos
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# figura 5
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# unir datos
+#------------------------------------------------
+
+erce_a6 <- erce_qa6 %>%
+           dplyr::left_join(., erce_hse_selected,
+            by = c('IDCNTRY', 'IDSCHOOL', 'IDCLASS','IDSTUD'))
+
+```
+
+## Crear variables
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# figura 5
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# crear cluster únicos
+#------------------------------------------------
+
+erce_a6 <- erce_a6 %>%
+           mutate(id_k = as.numeric(as.factor(paste0(IDCNTRY)))) %>%
+           mutate(id_s = as.numeric(as.factor(paste0(IDCNTRY, "_", STRATA)))) %>%
+           mutate(id_j = as.numeric(as.factor(paste0(IDCNTRY, "_", IDSCHOOL)))) %>%
+           mutate(id_i = seq(1:nrow(.))) 
+
+```
+
+## Declarar diseño
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# figura 5
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# base de datos con diseño
+#------------------------------------------------
+
+# survey method: taylor series linearization library(srvyr)
+library(srvyr)
+erce_tsl <- erce_a6 %>% 
+            as_survey_design(
+            strata = id_s, 
+            ids = id_j, 
+            weights = WS, 
+            nest = TRUE)
+
+# Opción: corección a unidad primaria de muestreo que resulte 
+# única al estrato
+
+library(survey)
+options(survey.lonely.psu="adjust")
+
+```
+
+## Estimar resultados con variables categóricas
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# figura 5
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# items de interés
+#------------------------------------------------
+
+# MS3MR1   Sigo las normas y reglas de la clase.
+# MS3MR2   Pido ayuda al profesor cuando no entiendo lo que hay que hacer.
+# MS3PP2   Aunque una tarea sea muy difícil, sigo trabajando en ella.
+
+#------------------------------------------------
+# porcentajes por item
+#------------------------------------------------
+
+row_1 <- erce_tsl %>%
+         summarize(
+           p1 = survey_mean(MS3MR1==1, na.rm = TRUE),
+           p2 = survey_mean(MS3MR1==2, na.rm = TRUE),
+           p3 = survey_mean(MS3MR1==3, na.rm = TRUE),
+           p4 = survey_mean(MS3MR1==4, na.rm = TRUE),
+           ) %>%
+         mutate(item = 'MS3MR1') %>%
+         dplyr::select(item, p1, p2, p3, p4)
+
+row_2 <- erce_tsl %>%
+         summarize(
+           p1 = survey_mean(MS3MR2==1, na.rm = TRUE),
+           p2 = survey_mean(MS3MR2==2, na.rm = TRUE),
+           p3 = survey_mean(MS3MR2==3, na.rm = TRUE),
+           p4 = survey_mean(MS3MR2==4, na.rm = TRUE),
+           ) %>%
+         mutate(item = 'MS3MR2') %>%
+         dplyr::select(item, p1, p2, p3, p4)
+
+row_3 <- erce_tsl %>%
+         summarize(
+           p1 = survey_mean(MS3PP2==1, na.rm = TRUE),
+           p2 = survey_mean(MS3PP2==2, na.rm = TRUE),
+           p3 = survey_mean(MS3PP2==3, na.rm = TRUE),
+           p4 = survey_mean(MS3PP2==4, na.rm = TRUE),
+           ) %>%
+         mutate(item = 'MS3PP2') %>%
+         dplyr::select(item, p1, p2, p3, p4)
+
+
+
+```
+
+## Definir forma de presentación de resultados
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# nivel de lectura en la region
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# tabla
+#------------------------------------------------
+
+tabla_fig5 <- dplyr::bind_rows(row_1, row_2, row_3)
+
+#------------------------------------------------
+# mostrar tabla
+#------------------------------------------------
+
+knitr::kable(tabla_fig5, digits = 2)
+
+```
+
+## Exportar resultados
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# nivel de lectura en la region
+# -------------------------------------------------------------------
+
+#------------------------------------------------
+# exportar resultados
+#------------------------------------------------
+
+tabla_fig5 %>%
+openxlsx::write.xlsx(., 
+  'tabla_figura_5.xlsx',
+  overwrite = TRUE)
+
+```
+
+
+# Figura 7
+
+```{r echo = TRUE, eval = FALSE, warnings = FALSE, message = FALSE}
+
+# -------------------------------------------------------------------
+# figura 7
+# -------------------------------------------------------------------
+
+
+#------------------------------------------------
+# abrir datos
+#------------------------------------------------
+
+library(dplyr)
+
+erce_qa6 <- erce::erce_2019_qa6 %>%
+            erce::remove_labels()
+
+erce_hse <- erce::erce_2019_hse %>%
+            erce::remove_labels()
+
+#------------------------------------------------
+# unir datos
+#------------------------------------------------
+
+erce_hse_selected <- erce_hse %>%
+                     dplyr::select(
+                     # clustering
+                     IDCNTRY, IDSCHOOL, IDCLASS, IDSTUD,
+                     # items
+                     MS3MR1:VD3AO6
+                     )
+
+erce_a6 <- erce_qa6 %>%
+           dplyr::left_join(., erce_hse_selected,
+            by = c('IDCNTRY', 'IDSCHOOL', 'IDCLASS','IDSTUD'))
+
+#------------------------------------------------
+# abrir datos y crear variables
+#------------------------------------------------
+
+data_a6 <- erce_a6 %>%
+           erce::remove_labels() %>%
+           mutate(id_k = as.numeric(as.factor(paste0(IDCNTRY)))) %>%
+           mutate(id_s = as.numeric(as.factor(paste0(IDCNTRY, "_", STRATA)))) %>%
+           mutate(id_j = as.numeric(as.factor(paste0(IDCNTRY, "_", IDSCHOOL)))) %>%
+           mutate(id_i = seq(1:nrow(.))) %>%
+           mutate(ses = ISECF) %>%
+           mutate(ses_g = r4sda::c_wmean(x = ses, w = WS, j = id_k)) %>%
+           mutate(ses_m = ses - ses_g)
+
+#------------------------------------------------
+# función
+#------------------------------------------------
+
+reg_gap <- function(data, var){
+
+library(srvyr)
+erce_brr <- data %>%
+            mutate(y = {{var}}) %>%
+            erce::remove_labels() %>%
+            as_survey_rep(type = 'Fay', 
+            repweights = starts_with('BRR'),
+            weights = 'WT',
+            combined_weights = TRUE,
+            rho = .5,
+            mse = TRUE)
+
+ctry_acron <- data %>%
+              dplyr::select(COUNTRY) %>%
+              unique() %>%
+              dplyr::pull()
+
+reg_est <- survey::svyglm(y ~ ses_m, design = erce_brr) %>%
+           broom::tidy() %>%
+           mutate(ctry = ctry_acron) %>%
+           dplyr::select(ctry, term, estimate, std.error, statistic, p.value)
+
+return(reg_est)
+
+}
+
+#------------------------------------------------
+# definir digitos en consola
+#------------------------------------------------
+
+options(digits = 10)
+options(scipen = 999999)
+
+#------------------------------------------------
+# crear y desplegar tabla
+#------------------------------------------------
+
+data_a6 %>%
+split(.$COUNTRY) %>%
+purrr::map( ~ reg_gap(
+data = .,
+var  = AURES
+))  %>%
+dplyr::bind_rows(., .id = 'COUNTRY') %>%
+# dplyr::filter(term == 'ses_m') %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+
+# Figura 7 (sin centrar ses)
+
+```{r echo = TRUE, eval = FALSE, warnings = FALSE, message = FALSE}
+
+# -------------------------------------------------------------------
+# figura 7
+# -------------------------------------------------------------------
+
+
+#------------------------------------------------
+# abrir datos
+#------------------------------------------------
+
+library(dplyr)
+
+erce_qa6 <- erce::erce_2019_qa6 %>%
+            erce::remove_labels()
+
+erce_hse <- erce::erce_2019_hse %>%
+            erce::remove_labels()
+
+#------------------------------------------------
+# unir datos
+#------------------------------------------------
+
+erce_hse_selected <- erce_hse %>%
+                     dplyr::select(
+                     # clustering
+                     IDCNTRY, IDSCHOOL, IDCLASS, IDSTUD,
+                     # items
+                     MS3MR1:VD3AO6
+                     )
+
+erce_a6 <- erce_qa6 %>%
+           dplyr::left_join(., erce_hse_selected,
+            by = c('IDCNTRY', 'IDSCHOOL', 'IDCLASS','IDSTUD'))
+
+#------------------------------------------------
+# abrir datos y crear variables
+#------------------------------------------------
+
+data_a6 <- erce_a6 %>%
+           erce::remove_labels() %>%
+           mutate(id_k = as.numeric(as.factor(paste0(IDCNTRY)))) %>%
+           mutate(id_s = as.numeric(as.factor(paste0(IDCNTRY, "_", STRATA)))) %>%
+           mutate(id_j = as.numeric(as.factor(paste0(IDCNTRY, "_", IDSCHOOL)))) %>%
+           mutate(id_i = seq(1:nrow(.))) %>%
+           mutate(ses = ISECF) %>%
+           mutate(ses_g = r4sda::c_wmean(x = ses, w = WS, j = id_k)) %>%
+           mutate(ses_m = ses - ses_g)
+
+#------------------------------------------------
+# función
+#------------------------------------------------
+
+reg_gap <- function(data, var){
+
+library(srvyr)
+erce_brr <- data %>%
+            mutate(y = {{var}}) %>%
+            erce::remove_labels() %>%
+            as_survey_rep(type = 'Fay', 
+            repweights = starts_with('BRR'),
+            weights = 'WT',
+            combined_weights = TRUE,
+            rho = .5,
+            mse = TRUE)
+
+ctry_acron <- data %>%
+              dplyr::select(COUNTRY) %>%
+              unique() %>%
+              dplyr::pull()
+
+reg_est <- survey::svyglm(y ~ ISECF, design = erce_brr) %>%
+           broom::tidy() %>%
+           mutate(ctry = ctry_acron) %>%
+           dplyr::select(ctry, term, estimate, std.error, statistic, p.value)
+
+return(reg_est)
+
+}
+
+#------------------------------------------------
+# definir digitos en consola
+#------------------------------------------------
+
+options(digits = 10)
+options(scipen = 999999)
+
+#------------------------------------------------
+# crear y desplegar tabla
+#------------------------------------------------
+
+data_a6 %>%
+split(.$COUNTRY) %>%
+purrr::map( ~ reg_gap(
+data = .,
+var  = AURES
+))  %>%
+dplyr::bind_rows(., .id = 'COUNTRY') %>%
+# dplyr::filter(term == 'ses_m') %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+# Figura 8: Autorregulación Escolar
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# figura 8
+# -------------------------------------------------------------------
+
+
+#------------------------------------------------
+# abrir datos
+#------------------------------------------------
+
+library(dplyr)
+
+erce_qa6 <- erce::erce_2019_qa6 %>%
+            erce::remove_labels()
+
+erce_hse <- erce::erce_2019_hse %>%
+            erce::remove_labels()
+
+#------------------------------------------------
+# unir datos
+#------------------------------------------------
+
+erce_hse_selected <- erce_hse %>%
+                     dplyr::select(
+                     # clustering
+                     IDCNTRY, IDSCHOOL, IDCLASS, IDSTUD,
+                     # items
+                     MS3MR1:VD3AO6
+                     )
+
+erce_a6 <- erce_qa6 %>%
+           dplyr::left_join(., erce_hse_selected,
+            by = c('IDCNTRY', 'IDSCHOOL', 'IDCLASS','IDSTUD'))
+
+#------------------------------------------------
+# abrir datos y crear variables
+#------------------------------------------------
+
+data_a6 <- erce_a6 %>%
+           erce::remove_labels() %>%
+           mutate(id_k = as.numeric(as.factor(paste0(IDCNTRY)))) %>%
+           mutate(id_s = as.numeric(as.factor(paste0(IDCNTRY, "_", STRATA)))) %>%
+           mutate(id_j = as.numeric(as.factor(paste0(IDCNTRY, "_", IDSCHOOL)))) %>%
+           mutate(id_i = seq(1:nrow(.)))
+
+
+#------------------------------------------------
+# sexo de los estudiantes
+#------------------------------------------------
+
+labelled::look_for(erce::erce_2019_qa6, 'sex')
+
+#  labelled::look_for(erce::erce_2019_qa6, 'sex')
+# pos variable label                   col_type values          
+# 7   GRADE    Grado                   dbl+lbl  [3] Tercer grado
+#                                               [6] Sexto grado 
+# 272 SEX      Sexo de los estudiantes dbl+lbl  [0] Niño        
+#                                               [1] Niña 
+
+#------------------------------------------------
+# función
+#------------------------------------------------
+
+reg_gap <- function(data, var){
+
+library(srvyr)
+erce_brr <- data %>%
+            mutate(y = {{var}}) %>%
+            erce::remove_labels() %>%
+            as_survey_rep(type = 'Fay', 
+            repweights = starts_with('BRR'),
+            weights = 'WT',
+            combined_weights = TRUE,
+            rho = .5,
+            mse = TRUE)
+
+ctry_acron <- data %>%
+              dplyr::select(COUNTRY) %>%
+              unique() %>%
+              dplyr::pull()
+
+reg_est <- survey::svyglm(y ~ SEX, design = erce_brr) %>%
+           broom::tidy() %>%
+           mutate(ctry = ctry_acron) %>%
+           dplyr::select(ctry, term, estimate, std.error, statistic, p.value)
+
+return(reg_est)
+
+}
+
+#------------------------------------------------
+# definir digitos en consola
+#------------------------------------------------
+
+options(digits = 10)
+options(scipen = 999999)
+
+#------------------------------------------------
+# crear y desplegar tabla
+#------------------------------------------------
+
+data_a6 %>%
+split(.$COUNTRY) %>%
+purrr::map( ~ reg_gap(
+data = .,
+var  = AURES
+))  %>%
+dplyr::bind_rows(., .id = 'COUNTRY') %>%
+dplyr::filter(term == 'SEX') %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+# Figura 8: Apertura a la Diversidad
+
+```{r echo = TRUE, eval = TRUE}
+
+# -------------------------------------------------------------------
+# figura 8
+# -------------------------------------------------------------------
+
+
+#------------------------------------------------
+# abrir datos
+#------------------------------------------------
+
+library(dplyr)
+
+erce_qa6 <- erce::erce_2019_qa6 %>%
+            erce::remove_labels()
+
+erce_hse <- erce::erce_2019_hse %>%
+            erce::remove_labels()
+
+#------------------------------------------------
+# unir datos
+#------------------------------------------------
+
+erce_hse_selected <- erce_hse %>%
+                     dplyr::select(
+                     # clustering
+                     IDCNTRY, IDSCHOOL, IDCLASS, IDSTUD,
+                     # items
+                     MS3MR1:VD3AO6
+                     )
+
+erce_a6 <- erce_qa6 %>%
+           dplyr::left_join(., erce_hse_selected,
+            by = c('IDCNTRY', 'IDSCHOOL', 'IDCLASS','IDSTUD'))
+
+#------------------------------------------------
+# abrir datos y crear variables
+#------------------------------------------------
+
+data_a6 <- erce_a6 %>%
+           erce::remove_labels() %>%
+           mutate(id_k = as.numeric(as.factor(paste0(IDCNTRY)))) %>%
+           mutate(id_s = as.numeric(as.factor(paste0(IDCNTRY, "_", STRATA)))) %>%
+           mutate(id_j = as.numeric(as.factor(paste0(IDCNTRY, "_", IDSCHOOL)))) %>%
+           mutate(id_i = seq(1:nrow(.)))
+
+
+#------------------------------------------------
+# sexo de los estudiantes
+#------------------------------------------------
+
+labelled::look_for(erce::erce_2019_qa6, 'sex')
+
+#  labelled::look_for(erce::erce_2019_qa6, 'sex')
+# pos variable label                   col_type values          
+# 7   GRADE    Grado                   dbl+lbl  [3] Tercer grado
+#                                               [6] Sexto grado 
+# 272 SEX      Sexo de los estudiantes dbl+lbl  [0] Niño        
+#                                               [1] Niña 
+
+#------------------------------------------------
+# función
+#------------------------------------------------
+
+reg_gap <- function(data, var){
+
+library(srvyr)
+erce_brr <- data %>%
+            mutate(y = {{var}}) %>%
+            erce::remove_labels() %>%
+            as_survey_rep(type = 'Fay', 
+            repweights = starts_with('BRR'),
+            weights = 'WT',
+            combined_weights = TRUE,
+            rho = .5,
+            mse = TRUE)
+
+ctry_acron <- data %>%
+              dplyr::select(COUNTRY) %>%
+              unique() %>%
+              dplyr::pull()
+
+reg_est <- survey::svyglm(y ~ SEX, design = erce_brr) %>%
+           broom::tidy() %>%
+           mutate(ctry = ctry_acron) %>%
+           dplyr::select(ctry, term, estimate, std.error, statistic, p.value)
+
+return(reg_est)
+
+}
+
+#------------------------------------------------
+# definir digitos en consola
+#------------------------------------------------
+
+options(digits = 10)
+options(scipen = 999999)
+
+#------------------------------------------------
+# crear y desplegar tabla
+#------------------------------------------------
+
+data_a6 %>%
+split(.$COUNTRY) %>%
+purrr::map( ~ reg_gap(
+data = .,
+var  = APDIV
+))  %>%
+dplyr::bind_rows(., .id = 'COUNTRY') %>%
+dplyr::filter(term == 'SEX') %>%
+knitr::kable(., digits = 2)
+
+
+```
+
+
+# Consideraciones para comparaciones entre 
+
+- Condiciones
+  + Comparaciones entre países
+  + Con un mismo instrumento
+  + En un mismo estudio
+  + Con mismo diseño
+
+- ¿En que escala esta peso muestral?
+  + El peso muestral pueda ser transformado.
+
+
+- Condiciones
+  + Comparaciones entre países
+  + Con un mismo instrumento
+  + En un mismo estudio
+  + Con mismo diseño
+
+- ¿En que escala esta peso muestral?
+  + El peso muestral pueda ser transformado.
+
+
+
+# Centrado de variables
+
+
+y_ij = alpha + beta x_ij + e_ij
+
+
+y_ij = alpha + beta_1 x_ij + e_ij
+
+
+y_ij = alpha + beta_2 (x_ij - x_..) + e_ij
+
+y_.. == alpha
+
+
+
+
+
+# modelo poblacional
+
+y_ij = alpha + beta_1 (x_ij - x_..) + e_ij
+
+y_.. == alpha
+
+
+# modelo desagregado
+
+y_ij = alpha + beta_2 (x_ij - x_.j) + beta_3 (x_.j - x_..) + e_ij
+
+y_.. == alpha
+
+x_ij = x_w + x_b
+
+x_w = variabilidad entre estudiantes, al interior de las escuelas.
+      variabilidad entre estudiantes, entre todas las escuelas.
+
+x_b = variabilidad entre escuelas 
+
+
+
+
+
+
+
+
+
+
+
