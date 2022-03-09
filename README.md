@@ -20,10 +20,10 @@
         regresiones](https://www.dropbox.com/s/2bkue9vox99jfws/04_regresiones.pdf?dl=1)
         -   como ajustar regresiones con diseño muestral
     -   [05
-        resultados](https://www.dropbox.com/s/rz52cklx9f8lsyu/05_resultados.pdf?dl=1)
+        resultados](https://www.dropbox.com/s/5v0od8absek2lp1/05_resultados.pdf?dl=1)
         -   desarollo y reproducción de resultados
     -   [06
-        multinivel](https://www.dropbox.com/s/gtgqutfv97n8w0e/06_multinivel.pdf?dl=1)
+        multinivel](https://www.dropbox.com/s/ryasa4w2tgbgzhp/06_multinivel.pdf?dl=1)
         -   como ajustar modelos multinivel con diseño muestral
 
 # erce
