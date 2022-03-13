@@ -23,7 +23,7 @@
         resultados](https://www.dropbox.com/s/5v0od8absek2lp1/05_resultados.pdf?dl=1)
         -   desarollo y reproducción de resultados
     -   [06
-        multinivel](https://www.dropbox.com/s/ryasa4w2tgbgzhp/06_multinivel.pdf?dl=1)
+        multinivel](https://www.dropbox.com/s/ydezg9t7n8wi7bl/06_multinivel.pdf?dl=1)
         -   como ajustar modelos multinivel con diseño muestral
 
 # erce
